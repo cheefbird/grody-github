@@ -49,7 +49,6 @@ Then in Chrome:
 2. Hit **Options**
 3. Paste a [GitHub Personal Access Token](https://github.com/settings/tokens)
    - `repo` scope if you need private repos
-   - No scopes needed for public repos only
 4. Token gets validated on save — the popup turns green when you're connected
 
 ## Development
