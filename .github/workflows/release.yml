@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Verify tag is on main
-        run: git branch --contains "$GITHUB_SHA" | grep -q '^\s*main$'
+        run: git branch -r --contains "$GITHUB_SHA" | grep -q 'origin/main'
         env:
           GITHUB_SHA: ${{ github.sha }}
 
