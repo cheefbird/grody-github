@@ -2,7 +2,7 @@
   "name": "Grody Github",
   "description": "A chrome extension for making Github less annoying",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "packageManager": "pnpm@10.32.0",
   "scripts": {
