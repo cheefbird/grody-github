@@ -6,13 +6,23 @@
   let loading = $state(true);
 
   onMount(async () => {
-    const token = await tokenStorage.getValue();
-    hasToken = !!token;
-    loading = false;
+    try {
+      const token = await tokenStorage.getValue();
+      hasToken = !!token;
+    } catch (err) {
+      console.error("[grody-github] Failed to load token status:", err);
+    } finally {
+      loading = false;
+    }
   });
 
-  function openOptions() {
-    browser.runtime.openOptionsPage();
+  async function openOptions() {
+    try {
+      await browser.runtime.openOptionsPage();
+    } catch (err) {
+      console.error("[grody-github] Failed to open options page:", err);
+      return;
+    }
     window.close();
   }
 </script>
@@ -23,6 +33,12 @@
   {#if !loading}
     {#if hasToken}
       <p class="connected">Connected</p>
+      <p class="hint">
+        Token stored locally, sent only to GitHub. <button
+          class="link"
+          onclick={openOptions}>See options</button
+        > for details.
+      </p>
     {:else}
       <p>Add your GitHub token to enable workflow filtering.</p>
     {/if}
@@ -58,6 +74,19 @@
   }
   .connected {
     color: light-dark(#1a7f37, #3fb950);
+    margin-bottom: 0.25rem;
+  }
+  .hint {
+    font-size: 0.75rem;
+  }
+  .link {
+    all: unset;
+    color: light-dark(#0969da, #58a6ff);
+    cursor: pointer;
+    font-size: inherit;
+  }
+  .link:hover {
+    text-decoration: underline;
   }
   button {
     padding: 0.45rem 1.2rem;
