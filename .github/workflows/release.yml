@@ -13,6 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag is on main
+        run: git branch --contains "$GITHUB_SHA" | grep -q '^\s*main$'
+        env:
+          GITHUB_SHA: ${{ github.sha }}
 
       - uses: pnpm/action-setup@v4
 
