@@ -1,9 +1,10 @@
 {
-  "name": "grody-github",
-  "description": "Filter and search GitHub Actions workflows",
+  "name": "Grody Github",
+  "description": "A chrome extension for making Github less annoying",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "packageManager": "pnpm@10.32.0",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",

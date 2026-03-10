@@ -14,6 +14,9 @@ stats-*.json
 .wxt
 web-ext.config.ts
 
+# WXT publishing secrets
+.env.submit
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
