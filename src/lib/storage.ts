@@ -1,17 +1,20 @@
-import type { WorkflowCache } from './types';
+import type { WorkflowCache } from "./types";
 
-export const tokenStorage = storage.defineItem<string>('local:github-pat', {
-  fallback: '',
+export const tokenStorage = storage.defineItem<string>("local:github-pat", {
+  fallback: "",
 });
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function cacheKey(owner: string, repo: string) {
+  return `local:workflow-cache:${owner}/${repo}` as `local:${string}`;
+}
 
 export async function getCachedWorkflows(
   owner: string,
   repo: string,
 ): Promise<WorkflowCache | null> {
-  const key = `local:workflow-cache:${owner}/${repo}` as `local:${string}`;
-  const cached = await storage.getItem<WorkflowCache>(key);
+  const cached = await storage.getItem<WorkflowCache>(cacheKey(owner, repo));
   if (!cached) return null;
   if (Date.now() - cached.timestamp > CACHE_TTL_MS) return null;
   return cached;
@@ -20,10 +23,9 @@ export async function getCachedWorkflows(
 export async function setCachedWorkflows(
   owner: string,
   repo: string,
-  workflows: WorkflowCache['workflows'],
+  workflows: WorkflowCache["workflows"],
 ): Promise<void> {
-  const key = `local:workflow-cache:${owner}/${repo}` as `local:${string}`;
-  await storage.setItem<WorkflowCache>(key, {
+  await storage.setItem<WorkflowCache>(cacheKey(owner, repo), {
     workflows,
     timestamp: Date.now(),
   });

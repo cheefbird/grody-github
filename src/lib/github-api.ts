@@ -1,9 +1,9 @@
-import type { Workflow } from './types';
+import type { Workflow } from "./types";
 import {
   tokenStorage,
   getCachedWorkflows,
   setCachedWorkflows,
-} from './storage';
+} from "./storage";
 
 type WorkflowApiResponse = {
   total_count: number;
@@ -15,10 +15,16 @@ type WorkflowApiResponse = {
   }>;
 };
 
+const MAX_PAGES = 10;
+
 function parseLinkHeader(header: string | null): string | null {
   if (!header) return null;
   const match = /<([^>]+)>;\s*rel="next"/.exec(header);
-  return match ? match[1] : null;
+  if (!match) return null;
+  const nextUrl = match[1];
+  // Only follow links back to the GitHub API
+  if (!nextUrl.startsWith("https://api.github.com/")) return null;
+  return nextUrl;
 }
 
 async function fetchAllWorkflows(
@@ -29,11 +35,13 @@ async function fetchAllWorkflows(
   const workflows: Workflow[] = [];
   let url: string | null =
     `https://api.github.com/repos/${owner}/${repo}/actions/workflows?per_page=100`;
+  let page = 0;
 
-  while (url) {
+  while (url && page < MAX_PAGES) {
+    page++;
     const response = await fetch(url, {
       headers: {
-        Accept: 'application/vnd.github.v3+json',
+        Accept: "application/vnd.github.v3+json",
         Authorization: `token ${token}`,
       },
     });
@@ -47,12 +55,12 @@ async function fetchAllWorkflows(
     const data: WorkflowApiResponse = await response.json();
 
     for (const workflow of data.workflows) {
-      if (workflow.state === 'active' && workflow.path) {
+      if (workflow.state === "active" && workflow.path) {
         workflows.push({ name: workflow.name, path: workflow.path });
       }
     }
 
-    url = parseLinkHeader(response.headers.get('Link'));
+    url = parseLinkHeader(response.headers.get("Link"));
   }
 
   return workflows;
@@ -62,13 +70,18 @@ export async function getWorkflows(
   owner: string,
   repo: string,
 ): Promise<Workflow[] | null> {
-  const token = await tokenStorage.getValue();
-  if (!token) return null;
+  try {
+    const token = await tokenStorage.getValue();
+    if (!token) return null;
 
-  const cached = await getCachedWorkflows(owner, repo);
-  if (cached) return cached.workflows;
+    const cached = await getCachedWorkflows(owner, repo);
+    if (cached) return cached.workflows;
 
-  const workflows = await fetchAllWorkflows(owner, repo, token);
-  await setCachedWorkflows(owner, repo, workflows);
-  return workflows;
+    const workflows = await fetchAllWorkflows(owner, repo, token);
+    await setCachedWorkflows(owner, repo, workflows);
+    return workflows;
+  } catch (err) {
+    console.error("[grody-github] Failed to fetch workflows:", err);
+    return null;
+  }
 }

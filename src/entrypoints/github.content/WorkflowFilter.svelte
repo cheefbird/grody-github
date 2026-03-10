@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getWorkflows } from "../../lib/github-api";
-  import type { Workflow } from "../../lib/types";
+  import { getWorkflows } from "@/lib/github-api";
+  import type { Workflow } from "@/lib/types";
 
   let {
     owner,
@@ -121,14 +121,18 @@
     cloneOriginalChildren();
 
     // Async work via .then() — onMount cleanup requires synchronous callback
-    getWorkflows(owner, repo).then((result) => {
-      if (!result || result.length === 0) return;
-      workflows = result;
-      loaded = true;
-      if (showMoreContainer) {
-        showMoreContainer.hidden = true;
-      }
-    });
+    getWorkflows(owner, repo)
+      .then((result) => {
+        if (!result || result.length === 0) return;
+        workflows = result;
+        loaded = true;
+        if (showMoreContainer) {
+          showMoreContainer.hidden = true;
+        }
+      })
+      .catch((err) => {
+        console.error("[grody-github] Workflow filter init failed:", err);
+      });
 
     return () => {
       if (showMoreContainer) {

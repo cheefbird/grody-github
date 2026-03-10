@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { tokenStorage } from "../../lib/storage";
+  import { tokenStorage } from "@/lib/storage";
 
   let hasToken = $state(false);
   let loading = $state(true);

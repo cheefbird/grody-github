@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { tokenStorage } from "../../lib/storage";
+  import { tokenStorage } from "@/lib/storage";
 
   let token = $state("");
   let status = $state<"idle" | "saving" | "success" | "error">("idle");
@@ -13,7 +13,11 @@
   });
 
   onMount(async () => {
-    token = await tokenStorage.getValue();
+    try {
+      token = await tokenStorage.getValue();
+    } catch (err) {
+      console.error("[grody-github] Failed to load token:", err);
+    }
   });
 
   async function validateToken(pat: string): Promise<boolean> {
@@ -32,9 +36,15 @@
     const trimmed = token.trim();
 
     if (!trimmed) {
-      await tokenStorage.setValue("");
-      status = "success";
-      errorMessage = "Token cleared. Workflow filtering is disabled.";
+      try {
+        await tokenStorage.setValue("");
+        status = "success";
+        errorMessage = "Token cleared. Workflow filtering is disabled.";
+      } catch (err) {
+        console.error("[grody-github] Failed to clear token:", err);
+        status = "error";
+        errorMessage = "Failed to clear token from storage.";
+      }
       return;
     }
 
@@ -46,14 +56,22 @@
           "Token is invalid or expired. Check your token and try again.";
         return;
       }
-    } catch {
+    } catch (err) {
+      console.error("[grody-github] Token validation failed:", err);
       status = "error";
       errorMessage =
         "Could not reach GitHub. Check your connection and try again.";
       return;
     }
 
-    await tokenStorage.setValue(trimmed);
+    try {
+      await tokenStorage.setValue(trimmed);
+    } catch (err) {
+      console.error("[grody-github] Failed to save token:", err);
+      status = "error";
+      errorMessage = "Failed to save token to storage.";
+      return;
+    }
     status = "success";
   }
 </script>
