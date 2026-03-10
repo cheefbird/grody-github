@@ -12,7 +12,7 @@ function parseRepo(): { owner: string; repo: string } | null {
   return { owner: parts[0], repo: parts[1] };
 }
 
-function shouldActivate(): HTMLElement | null {
+function findNavList(): HTMLElement | null {
   if (!ACTIONS_PATTERN.test(location.pathname)) return null;
 
   const navList = document.querySelector<HTMLElement>(SIDEBAR_NAV_SELECTOR);
@@ -38,36 +38,32 @@ function teardown() {
   }
 }
 
-export function initWorkflowFilter(ctx: ContentScriptContext) {
+export function initWorkflowFilter(_ctx: ContentScriptContext) {
   teardown();
 
-  const navList = shouldActivate();
+  const navList = findNavList();
   if (!navList) return;
 
   const repoInfo = parseRepo();
   if (!repoInfo) return;
 
-  const ui = createIntegratedUi(ctx, {
-    position: "inline",
-    anchor: SIDEBAR_NAV_SELECTOR,
-    onMount: (container: HTMLElement) => {
-      currentContainer = container;
-      currentApp = mount(WorkflowFilter, {
-        target: container,
-        props: {
-          owner: repoInfo.owner,
-          repo: repoInfo.repo,
-          navList,
-        },
-      });
-      return currentApp;
-    },
-    onRemove: (app?: Record<string, any>) => {
-      if (app) unmount(app);
-      currentApp = null;
-      currentContainer = null;
+  // Find the workflows section to insert before it
+  const workflowsSection = navList.querySelector<HTMLElement>(
+    ":scope > li:has(nav-list-group)",
+  );
+  if (!workflowsSection) return;
+
+  // Mount directly into the DOM at the right position
+  const container = document.createElement("div");
+  workflowsSection.before(container);
+  currentContainer = container;
+
+  currentApp = mount(WorkflowFilter, {
+    target: container,
+    props: {
+      owner: repoInfo.owner,
+      repo: repoInfo.repo,
+      navList,
     },
   });
-
-  ui.mount();
 }
