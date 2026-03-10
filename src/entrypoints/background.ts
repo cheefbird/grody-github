@@ -1,3 +1,3 @@
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  console.log('Grody GitHub background loaded', { id: browser.runtime.id });
 });
