@@ -1,5 +1,3 @@
 export default defineBackground(() => {
-  browser.action.onClicked.addListener(() => {
-    browser.runtime.openOptionsPage();
-  });
+  console.log('Grody GitHub background loaded', { id: browser.runtime.id });
 });

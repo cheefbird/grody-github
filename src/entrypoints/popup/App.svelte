@@ -1,42 +1,55 @@
 <script lang="ts">
-  import svelteLogo from '../../assets/svelte.svg'
-  import Counter from '../../lib/Counter.svelte'
+  function openOptions() {
+    browser.runtime.openOptionsPage();
+    window.close();
+  }
 </script>
 
 <main>
-  <div>
-    <a href="https://wxt.dev" target="_blank" rel="noreferrer">
-      <img src="/wxt.svg" class="logo" alt="WXT Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>WXT + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p class="read-the-docs">
-    Click on the WXT and Svelte logos to learn more
-  </p>
+  <img src="/icon/128.png" class="logo" alt="Grody GitHub" />
+  <h1>Grody GitHub</h1>
+  <p>Add your GitHub token to enable workflow filtering.</p>
+  <button onclick={openOptions}>Open Options</button>
 </main>
 
 <style>
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-width: 220px;
+    color: light-dark(#1f2328, #e6edf3);
+    background: light-dark(#ffffff, #0d1117);
+  }
   .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+    width: 64px;
+    height: 64px;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #54bc4ae0);
+  h1 {
+    font-size: 1rem;
+    margin: 0.75rem 0 0.5rem;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+  p {
+    font-size: 0.8rem;
+    color: light-dark(#656d76, #8b949e);
+    text-align: center;
+    margin: 0 0 1rem;
+    line-height: 1.4;
   }
-  .read-the-docs {
-    color: #888;
+  button {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 1px solid light-dark(#d0d7de, #30363d);
+    border-radius: 6px;
+    background: light-dark(#f6f8fa, #21262d);
+    color: light-dark(#1f2328, #e6edf3);
+    font-weight: 500;
+  }
+  button:hover {
+    background: light-dark(#e1e4e8, #30363d);
+    border-color: light-dark(#8b949e, #8b949e);
   }
 </style>
