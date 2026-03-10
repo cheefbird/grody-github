@@ -1,7 +1,7 @@
 import { initWorkflowFilter } from "./features/workflow-filter";
 
 export default defineContentScript({
-  matches: ["*://github.com/*"],
+  matches: ["*://github.com/*/actions*"],
 
   main(ctx) {
     // Run features that match the current page
