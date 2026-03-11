@@ -21,6 +21,8 @@ function findNavList(): HTMLElement | null {
     .closest("nav")
     ?.querySelector<HTMLElement>(SHOW_MORE_SELECTOR);
   if (!showMore) return null;
+  const totalPages = Number(showMore.dataset.totalPages ?? "1");
+  if (totalPages <= 1) return null;
   return navList;
 }
 
