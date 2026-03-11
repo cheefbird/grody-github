@@ -2,7 +2,7 @@
   "name": "grody-github",
   "description": "A less refined Github annoyance eliminator.",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "packageManager": "pnpm@10.32.0",
   "scripts": {
