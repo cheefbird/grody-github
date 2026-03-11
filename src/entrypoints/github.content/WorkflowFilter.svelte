@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { getWorkflows } from "@/lib/github-api";
+  import { requestWorkflows } from "@/lib/github-api";
   import type { Workflow, WorkflowResult } from "@/lib/types";
 
   let {
@@ -122,7 +122,7 @@
     cloneOriginalChildren();
 
     // Async work via .then() — onMount cleanup requires synchronous callback
-    getWorkflows(owner, repo)
+    requestWorkflows(owner, repo)
       .then((result: WorkflowResult) => {
         if (!result.ok) {
           if (result.reason === "rate-limited") {

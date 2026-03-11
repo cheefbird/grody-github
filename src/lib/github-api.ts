@@ -1,4 +1,5 @@
 import type { Workflow, WorkflowResult } from "./types";
+import type { GetWorkflowsMessage } from "./messages";
 import {
   tokenStorage,
   getCachedWorkflows,
@@ -100,4 +101,12 @@ export async function getWorkflows(
 
     return { ok: false, reason: "error" };
   }
+}
+
+export async function requestWorkflows(
+  owner: string,
+  repo: string,
+): Promise<WorkflowResult> {
+  const message: GetWorkflowsMessage = { type: "GET_WORKFLOWS", owner, repo };
+  return browser.runtime.sendMessage(message);
 }
