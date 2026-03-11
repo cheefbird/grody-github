@@ -1,6 +1,6 @@
 {
-  "name": "Grody Github",
-  "description": "A chrome extension for making Github less annoying",
+  "name": "grody-github",
+  "description": "A less refined Github annoyance eliminator.",
   "private": true,
   "version": "0.2.0",
   "type": "module",

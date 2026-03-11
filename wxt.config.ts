@@ -9,6 +9,7 @@ export default defineConfig({
     artifactTemplate: "{{name}}-v{{version}}-{{browser}}.zip",
   },
   manifest: {
+    name: "Grody Github",
     permissions: ["storage"],
     browser_specific_settings: {
       gecko: {
