@@ -12,18 +12,28 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify tag is on main
         run: git branch -r --contains "$GITHUB_SHA" | grep -q 'origin/main'
         env:
           GITHUB_SHA: ${{ github.sha }}
 
-      - uses: pnpm/action-setup@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
 
-      - uses: actions/setup-node@v4
+      - name: Run Biome CI check
+        run: biome ci .
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
@@ -37,8 +47,13 @@ jobs:
       - name: Build Chrome zip
         run: pnpm zip
 
+      - name: Build Firefox zip
+        run: pnpm zip:firefox
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: .output/*-chrome.zip
+          files: |
+            .output/*-chrome.zip
+            .output/*-firefox.zip
