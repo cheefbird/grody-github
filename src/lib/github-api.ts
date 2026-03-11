@@ -1,10 +1,10 @@
-import type { Workflow, WorkflowResult } from "./types";
 import type { GetWorkflowsMessage } from "./messages";
 import {
-  tokenStorage,
   getCachedWorkflows,
   setCachedWorkflows,
+  tokenStorage,
 } from "./storage";
+import type { Workflow, WorkflowResult } from "./types";
 
 type WorkflowApiResponse = {
   total_count: number;

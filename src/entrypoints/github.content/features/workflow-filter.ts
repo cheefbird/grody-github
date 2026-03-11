@@ -1,6 +1,6 @@
+import { mount, unmount } from "svelte";
 import type { ContentScriptContext } from "#imports";
 import WorkflowFilter from "../WorkflowFilter.svelte";
-import { mount, unmount } from "svelte";
 
 const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
