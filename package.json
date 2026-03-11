@@ -13,6 +13,8 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "biome:format": "biome format",
+    "biome:lint": "biome lint",
     "postinstall": "wxt prepare"
   },
   "devDependencies": {

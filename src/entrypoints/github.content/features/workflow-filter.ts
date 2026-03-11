@@ -24,7 +24,7 @@ function findNavList(): HTMLElement | null {
   return navList;
 }
 
-let currentApp: Record<string, any> | null = null;
+let currentApp: ReturnType<typeof mount> | null = null;
 let currentContainer: HTMLElement | null = null;
 
 function teardown() {

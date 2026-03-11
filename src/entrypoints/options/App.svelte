@@ -1,85 +1,85 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { tokenStorage } from "@/lib/storage";
+import { onMount } from "svelte";
+import { tokenStorage } from "@/lib/storage";
 
-  let token = $state("");
-  let status = $state<"idle" | "saving" | "success" | "error">("idle");
-  let statusMessage = $state("");
-  let loaded = $state(false);
-  let connected = $derived(loaded && token.trim().length > 0);
+let token = $state("");
+let status = $state<"idle" | "saving" | "success" | "error">("idle");
+let statusMessage = $state("");
+let loaded = $state(false);
+let connected = $derived(loaded && token.trim().length > 0);
 
-  // Reset status when user edits the token
-  $effect(() => {
-    token;
-    status = "idle";
+// Reset status when user edits the token
+$effect(() => {
+  token;
+  status = "idle";
+});
+
+onMount(async () => {
+  try {
+    token = await tokenStorage.getValue();
+  } catch (err) {
+    console.error("[grody-github] Failed to load token:", err);
+    status = "error";
+    statusMessage = "Failed to load saved token from storage.";
+  }
+  loaded = true;
+});
+
+async function validateToken(pat: string): Promise<boolean> {
+  const response = await fetch("https://api.github.com/user", {
+    headers: {
+      Authorization: `token ${pat}`,
+      Accept: "application/vnd.github.v3+json",
+    },
   });
+  return response.ok;
+}
 
-  onMount(async () => {
+async function handleSave() {
+  status = "saving";
+  statusMessage = "";
+  const trimmed = token.trim();
+
+  if (!trimmed) {
     try {
-      token = await tokenStorage.getValue();
+      await tokenStorage.setValue("");
+      status = "success";
+      statusMessage =
+        "Token cleared. Public repos will still work without a token.";
     } catch (err) {
-      console.error("[grody-github] Failed to load token:", err);
+      console.error("[grody-github] Failed to clear token:", err);
       status = "error";
-      statusMessage = "Failed to load saved token from storage.";
+      statusMessage = "Failed to clear token from storage.";
     }
-    loaded = true;
-  });
-
-  async function validateToken(pat: string): Promise<boolean> {
-    const response = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `token ${pat}`,
-        Accept: "application/vnd.github.v3+json",
-      },
-    });
-    return response.ok;
+    return;
   }
 
-  async function handleSave() {
-    status = "saving";
-    statusMessage = "";
-    const trimmed = token.trim();
-
-    if (!trimmed) {
-      try {
-        await tokenStorage.setValue("");
-        status = "success";
-        statusMessage =
-          "Token cleared. Public repos will still work without a token.";
-      } catch (err) {
-        console.error("[grody-github] Failed to clear token:", err);
-        status = "error";
-        statusMessage = "Failed to clear token from storage.";
-      }
-      return;
-    }
-
-    try {
-      const valid = await validateToken(trimmed);
-      if (!valid) {
-        status = "error";
-        statusMessage =
-          "Token is invalid or expired. Check your token and try again.";
-        return;
-      }
-    } catch (err) {
-      console.error("[grody-github] Token validation failed:", err);
+  try {
+    const valid = await validateToken(trimmed);
+    if (!valid) {
       status = "error";
       statusMessage =
-        "Could not reach GitHub. Check your connection and try again.";
+        "Token is invalid or expired. Check your token and try again.";
       return;
     }
-
-    try {
-      await tokenStorage.setValue(trimmed);
-    } catch (err) {
-      console.error("[grody-github] Failed to save token:", err);
-      status = "error";
-      statusMessage = "Failed to save token to storage.";
-      return;
-    }
-    status = "success";
+  } catch (err) {
+    console.error("[grody-github] Token validation failed:", err);
+    status = "error";
+    statusMessage =
+      "Could not reach GitHub. Check your connection and try again.";
+    return;
   }
+
+  try {
+    await tokenStorage.setValue(trimmed);
+  } catch (err) {
+    console.error("[grody-github] Failed to save token:", err);
+    status = "error";
+    statusMessage = "Failed to save token to storage.";
+    return;
+  }
+  status = "success";
+}
 </script>
 
 <main>

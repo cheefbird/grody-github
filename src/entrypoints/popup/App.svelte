@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { tokenStorage } from "@/lib/storage";
+import { onMount } from "svelte";
+import { tokenStorage } from "@/lib/storage";
 
-  let hasToken = $state(false);
-  let loading = $state(true);
+let hasToken = $state(false);
+let loading = $state(true);
 
-  onMount(async () => {
-    try {
-      const token = await tokenStorage.getValue();
-      hasToken = !!token;
-    } catch (err) {
-      console.error("[grody-github] Failed to load token status:", err);
-    } finally {
-      loading = false;
-    }
-  });
-
-  async function openOptions() {
-    try {
-      await browser.runtime.openOptionsPage();
-    } catch (err) {
-      console.error("[grody-github] Failed to open options page:", err);
-      return;
-    }
-    window.close();
+onMount(async () => {
+  try {
+    const token = await tokenStorage.getValue();
+    hasToken = !!token;
+  } catch (err) {
+    console.error("[grody-github] Failed to load token status:", err);
+  } finally {
+    loading = false;
   }
+});
+
+async function openOptions() {
+  try {
+    await browser.runtime.openOptionsPage();
+  } catch (err) {
+    console.error("[grody-github] Failed to open options page:", err);
+    return;
+  }
+  window.close();
+}
 </script>
 
 <main>
