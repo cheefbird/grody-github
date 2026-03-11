@@ -1,10 +1,12 @@
 # Privacy Policy
 
+*Last updated: March 11, 2026*
+
 **Grody GitHub** is a browser extension that adds workflow filtering to GitHub Actions pages.
 
 ## Data Collection
 
-Grody GitHub does **not** collect, transmit, or share any user data. No analytics, telemetry, or tracking of any kind.
+Grody GitHub does **not** collect, transmit, or share any user data with third parties. No analytics, telemetry, or tracking of any kind.
 
 ## Data Storage
 
@@ -17,9 +19,13 @@ A GitHub Personal Access Token (PAT) may be stored in your browser's local exten
 
 Workflow data fetched from GitHub's API is cached locally for performance and automatically expires after 24 hours.
 
+## Website Content
+
+Grody GitHub reads page elements on GitHub Actions pages to detect the workflow sidebar and inject the filter UI. This content is processed locally and is never collected, stored, or transmitted.
+
 ## Permissions
 
-- **Host permissions** (`github.com`): Required to inject the workflow filter UI into GitHub Actions pages and make API requests to GitHub.
+- **Host permissions** (`github.com/*/actions*`): Required to inject the workflow filter UI into GitHub Actions pages and make API requests to `api.github.com`.
 - **Storage**: Required to save your token and cache workflow data locally.
 
 ## Contact
