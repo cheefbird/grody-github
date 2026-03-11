@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { getWorkflows } from "@/lib/github-api";
-  import type { Workflow } from "@/lib/types";
+  import type { Workflow, WorkflowResult } from "@/lib/types";
 
   let {
     owner,
@@ -12,6 +12,7 @@
   let query = $state("");
   let workflows: Workflow[] = $state([]);
   let loaded = $state(false);
+  let hint = $state<string | null>(null);
   let inputEl: HTMLInputElement | undefined = $state();
 
   // Internal DOM references (non-reactive, not used in template)
@@ -122,9 +123,17 @@
 
     // Async work via .then() — onMount cleanup requires synchronous callback
     getWorkflows(owner, repo)
-      .then((result) => {
-        if (!result || result.length === 0) return;
-        workflows = result;
+      .then((result: WorkflowResult) => {
+        if (!result.ok) {
+          if (result.reason === "rate-limited") {
+            hint = "Rate limited — add a token in extension options";
+          } else if (result.reason === "auth-required") {
+            hint = "Private repo — add a token in extension options";
+          }
+          return;
+        }
+        if (result.workflows.length === 0) return;
+        workflows = result.workflows;
         loaded = true;
         if (showMoreContainer) {
           showMoreContainer.hidden = true;
@@ -143,6 +152,11 @@
   });
 </script>
 
+{#if hint}
+  <li class="px-3 py-2">
+    <em class="color-fg-muted f6">{hint}</em>
+  </li>
+{/if}
 {#if loaded}
   <li class="p-2">
     <div class="subnav-search m-0 width-full">
