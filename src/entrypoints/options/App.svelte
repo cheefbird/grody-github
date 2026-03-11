@@ -44,7 +44,8 @@
       try {
         await tokenStorage.setValue("");
         status = "success";
-        statusMessage = "Token cleared. Workflow filtering is disabled.";
+        statusMessage =
+          "Token cleared. Public repos will still work without a token.";
       } catch (err) {
         console.error("[grody-github] Failed to clear token:", err);
         status = "error";
@@ -87,10 +88,10 @@
     <p class="connected">Connected</p>
   {/if}
 
-  <label for="pat">GitHub Personal Access Token</label>
+  <label for="pat">GitHub Personal Access Token (optional)</label>
   <p>
-    Required for filtering workflows in private repos. Needs <code>repo</code> scope
-    for private repos, or no scopes for public repos only.
+    Add a token to avoid rate limits or filter workflows in private repos. Needs
+    <code>repo</code> scope for private repos, or no scopes for public repos only.
   </p>
   <p class="hint">
     Your token is kept in local browser storage and is only ever sent to

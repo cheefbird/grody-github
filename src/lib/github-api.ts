@@ -30,7 +30,7 @@ function parseLinkHeader(header: string | null): string | null {
 async function fetchAllWorkflows(
   owner: string,
   repo: string,
-  token: string,
+  token: string | null,
 ): Promise<Workflow[]> {
   const workflows: Workflow[] = [];
   let url: string | null =
@@ -39,12 +39,13 @@ async function fetchAllWorkflows(
 
   while (url && page < MAX_PAGES) {
     page++;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        Authorization: `token ${token}`,
-      },
-    });
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github.v3+json",
+    };
+    if (token) {
+      headers.Authorization = `token ${token}`;
+    }
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
       throw new Error(
@@ -71,8 +72,7 @@ export async function getWorkflows(
   repo: string,
 ): Promise<Workflow[] | null> {
   try {
-    const token = await tokenStorage.getValue();
-    if (!token) return null;
+    const token = (await tokenStorage.getValue()) || null;
 
     const cached = await getCachedWorkflows(owner, repo);
     if (cached) return cached.workflows;

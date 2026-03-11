@@ -32,15 +32,20 @@
   <h1>Grody GitHub</h1>
   {#if !loading}
     {#if hasToken}
-      <p class="connected">Connected</p>
+      <p class="connected">Token connected</p>
       <p class="hint">
-        Token stored locally, sent only to GitHub. <button
+        Stored locally, sent only to GitHub. <button
           class="link"
           onclick={openOptions}>See options</button
         > for details.
       </p>
     {:else}
-      <p>Add your GitHub token to enable workflow filtering.</p>
+      <p class="hint">
+        Works on public repos without a token. <button
+          class="link"
+          onclick={openOptions}>Add a token</button
+        > to avoid rate limits or use with private repos.
+      </p>
     {/if}
   {/if}
   <button onclick={openOptions}>Options</button>
