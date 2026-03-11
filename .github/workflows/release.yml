@@ -57,3 +57,4 @@ jobs:
           files: |
             .output/*-chrome.zip
             .output/*-firefox.zip
+            .output/*-source.zip
