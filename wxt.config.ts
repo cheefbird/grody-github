@@ -4,6 +4,13 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   srcDir: "src",
   modules: ["@wxt-dev/module-svelte"],
+  svelte: {
+    vite: {
+      compilerOptions: {
+        fragments: "tree",
+      },
+    },
+  },
   zip: {
     name: "grody-github",
     artifactTemplate: "{{name}}-v{{version}}-{{browser}}.zip",

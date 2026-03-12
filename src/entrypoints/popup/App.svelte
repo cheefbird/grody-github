@@ -1,30 +1,30 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { tokenStorage } from "@/lib/storage";
+  import { onMount } from "svelte";
+  import { tokenStorage } from "@/lib/storage";
 
-let hasToken = $state(false);
-let loading = $state(true);
+  let hasToken = $state(false);
+  let loading = $state(true);
 
-onMount(async () => {
-  try {
-    const token = await tokenStorage.getValue();
-    hasToken = !!token;
-  } catch (err) {
-    console.error("[grody-github] Failed to load token status:", err);
-  } finally {
-    loading = false;
+  onMount(async () => {
+    try {
+      const token = await tokenStorage.getValue();
+      hasToken = !!token;
+    } catch (err) {
+      console.error("[grody-github] Failed to load token status:", err);
+    } finally {
+      loading = false;
+    }
+  });
+
+  async function openOptions() {
+    try {
+      await browser.runtime.openOptionsPage();
+    } catch (err) {
+      console.error("[grody-github] Failed to open options page:", err);
+      return;
+    }
+    window.close();
   }
-});
-
-async function openOptions() {
-  try {
-    await browser.runtime.openOptionsPage();
-  } catch (err) {
-    console.error("[grody-github] Failed to open options page:", err);
-    return;
-  }
-  window.close();
-}
 </script>
 
 <main>
@@ -34,21 +34,23 @@ async function openOptions() {
     {#if hasToken}
       <p class="connected">Token connected</p>
       <p class="hint">
-        Stored locally, sent only to GitHub. <button
-          class="link"
-          onclick={openOptions}>See options</button
-        > for details.
+        Stored locally, sent only to GitHub.
+        <button type="button" class="link" onclick={openOptions}>
+          See options
+          </button>
+        for details.
       </p>
     {:else}
       <p class="hint">
-        Works on public repos without a token. <button
-          class="link"
-          onclick={openOptions}>Add a token</button
-        > to avoid rate limits or use with private repos.
+        Works on public repos without a token.
+        <button type="button" class="link" onclick={openOptions}>
+          Add a token
+          </button>
+        to avoid rate limits or use with private repos.
       </p>
     {/if}
   {/if}
-  <button onclick={openOptions}>Options</button>
+  <button type="button" onclick={openOptions}>Options</button>
 </main>
 
 <style>
