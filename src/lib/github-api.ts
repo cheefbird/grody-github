@@ -18,7 +18,7 @@ type WorkflowApiResponse = {
 
 export class GitHubApiError extends Error {
   constructor(
-    public status: number,
+    public readonly status: number,
     statusText: string,
   ) {
     super(`GitHub API error: ${status} ${statusText}`);

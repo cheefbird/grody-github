@@ -6,8 +6,10 @@ const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
 export const ACTIONS_PATTERN = /^\/[^/]+\/[^/]+\/actions(\/|$)/;
 
-export function parseRepo(): { owner: string; repo: string } | null {
-  const parts = location.pathname.split("/").filter(Boolean);
+export function parseRepo(
+  pathname: string = location.pathname,
+): { owner: string; repo: string } | null {
+  const parts = pathname.split("/").filter(Boolean);
   if (parts.length < 2) return null;
   return { owner: parts[0], repo: parts[1] };
 }
