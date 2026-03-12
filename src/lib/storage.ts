@@ -6,7 +6,7 @@ export const tokenStorage = storage.defineItem<string>("local:github-pat", {
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-function cacheKey(owner: string, repo: string) {
+export function cacheKey(owner: string, repo: string) {
   return `local:workflow-cache:${owner}/${repo}` as `local:${string}`;
 }
 
