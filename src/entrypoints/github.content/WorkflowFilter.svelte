@@ -21,11 +21,6 @@ let innerUl: HTMLElement | null = null;
 let showMoreContainer: HTMLElement | null = null;
 let originalChildren: Node[] = [];
 
-// Static SVG strings, safe for {@html} — no user input involved
-const searchIconSvg = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon octicon-search subnav-search-icon"><path fill-rule="evenodd" d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"></path></svg>`;
-
-const xIconSvg = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon octicon-x"><path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path></svg>`;
-
 function findDomElements(): boolean {
   const allWorkflowsItem = navList.querySelector(":scope > li.ActionListItem");
   workflowsSection = navList.querySelector(":scope > li:has(nav-list-group)");
@@ -114,12 +109,10 @@ $effect(() => {
   return () => clearTimeout(timeout);
 });
 
-// Setup + teardown consolidated in onMount
 onMount(() => {
   if (!findDomElements()) return;
   cloneOriginalChildren();
 
-  // Async work via .then() — onMount cleanup requires synchronous callback
   requestWorkflows(owner, repo)
     .then((result: WorkflowResult) => {
       if (!result.ok) {
@@ -158,7 +151,7 @@ onMount(() => {
 {#if loaded}
   <li class="p-2">
     <div class="subnav-search m-0 width-full">
-      {@html searchIconSvg}
+      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon octicon-search subnav-search-icon"><path fill-rule="evenodd" d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04a.75.75 0 11-1.06 1.06l-3.04-3.04z"></path></svg>
       <input
         bind:this={inputEl}
         type="search"
@@ -175,7 +168,7 @@ onMount(() => {
           aria-label="Clear filter"
           onclick={handleClear}
         >
-          {@html xIconSvg}
+          <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon octicon-x"><path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path></svg>
         </button>
       {/if}
     </div>
