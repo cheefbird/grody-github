@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 import {
   fetchAllWorkflows,
@@ -79,8 +79,9 @@ function mockFetchResponse(
 }
 
 describe("fetchAllWorkflows", () => {
-  beforeEach(() => {
+  afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("returns active workflows with paths", async () => {
@@ -186,6 +187,36 @@ describe("fetchAllWorkflows", () => {
     expect(result).toHaveLength(2);
   });
 
+  it("stops after MAX_PAGES to prevent infinite pagination", async () => {
+    const alwaysPaginates = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        mockFetchResponse(
+          {
+            total_count: 100,
+            workflows: [
+              {
+                id: 1,
+                name: "W",
+                path: ".github/workflows/w.yml",
+                state: "active",
+              },
+            ],
+          },
+          {
+            linkHeader:
+              '<https://api.github.com/repos/owner/repo/actions/workflows?page=99>; rel="next"',
+          },
+        ),
+      ),
+    );
+
+    vi.stubGlobal("fetch", alwaysPaginates);
+
+    const result = await fetchAllWorkflows("owner", "repo", null);
+    expect(alwaysPaginates).toHaveBeenCalledTimes(10);
+    expect(result).toHaveLength(10);
+  });
+
   it("throws GitHubApiError on non-ok response", async () => {
     vi.stubGlobal(
       "fetch",
@@ -231,9 +262,13 @@ describe("fetchAllWorkflows", () => {
 });
 
 describe("getWorkflows", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   beforeEach(() => {
     fakeBrowser.reset();
-    vi.restoreAllMocks();
   });
 
   it("returns cached workflows when cache is fresh", async () => {
@@ -312,10 +347,42 @@ describe("getWorkflows", () => {
     expect(result).toEqual({ ok: false, reason: "auth-required" });
   });
 
+  it("returns generic error on 500 server error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse(null, {
+          ok: false,
+          status: 500,
+          statusText: "Internal Server Error",
+        }),
+      ),
+    );
+
+    const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "error" });
+  });
+
   it("returns generic error on unexpected failures", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockRejectedValueOnce(new Error("Network failure")),
+    );
+
+    const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "error" });
+  });
+
+  it("returns generic error on JSON parse failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: () => Promise.reject(new SyntaxError("Unexpected token <")),
+        headers: new Headers(),
+      } as Response),
     );
 
     const result = await getWorkflows("owner", "repo");

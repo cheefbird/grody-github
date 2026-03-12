@@ -30,27 +30,22 @@ describe("ACTIONS_PATTERN", () => {
 });
 
 describe("parseRepo", () => {
-  function stubLocation(pathname: string) {
-    vi.stubGlobal("location", { pathname });
-  }
-
   it("parses /owner/repo/actions correctly", () => {
-    stubLocation("/owner/repo/actions");
-    expect(parseRepo()).toEqual({ owner: "owner", repo: "repo" });
+    expect(parseRepo("/owner/repo/actions")).toEqual({
+      owner: "owner",
+      repo: "repo",
+    });
   });
 
   it("handles trailing slashes", () => {
-    stubLocation("/owner/repo/");
-    expect(parseRepo()).toEqual({ owner: "owner", repo: "repo" });
+    expect(parseRepo("/owner/repo/")).toEqual({ owner: "owner", repo: "repo" });
   });
 
   it("returns null for paths with fewer than 2 segments", () => {
-    stubLocation("/owner");
-    expect(parseRepo()).toBeNull();
+    expect(parseRepo("/owner")).toBeNull();
   });
 
   it("returns null for root path", () => {
-    stubLocation("/");
-    expect(parseRepo()).toBeNull();
+    expect(parseRepo("/")).toBeNull();
   });
 });
