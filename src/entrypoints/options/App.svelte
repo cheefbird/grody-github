@@ -90,9 +90,15 @@ async function handleSave() {
 
   <label for="pat">GitHub Personal Access Token (optional)</label>
   <p>
-    Add a token to avoid rate limits or filter workflows in private repos. Needs
-    <code>repo</code> scope for private repos, or no scopes for public repos only.
+    Add a token to avoid rate limits or filter workflows in private repos.
   </p>
+  <ul class="scope-list">
+    <li>
+      <strong>Fine-grained token</strong>: grant <strong>Actions (read)</strong> on the repos you need. No permissions needed for public repos.
+    </li>
+    <li>
+      <strong>Classic token</strong>: <code>repo</code> scope for private repos. No scopes needed for public repos.</li>
+  </ul>
   <p class="hint">
     Your token is kept in local browser storage and is only ever sent to
     api.github.com. For best security, use a
@@ -157,6 +163,12 @@ async function handleSave() {
     color: light-dark(#1a7f37, #3fb950);
     font-weight: 600;
     margin: 0 0 0.5rem;
+  }
+  .scope-list {
+    color: light-dark(#656d76, #8b949e);
+    margin: 0 0 0.5rem;
+    padding-left: 1.25rem;
+    font-size: 0.8rem;
   }
   .hint {
     font-size: 0.8rem;

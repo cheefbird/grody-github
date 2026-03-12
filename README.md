@@ -47,8 +47,10 @@ Then in Chrome:
 
 1. Click the Grody GitHub extension icon
 2. Hit **Options**
-3. Paste a [GitHub Personal Access Token](https://github.com/settings/tokens)
-   - `repo` scope if you need private repos
+3. Paste a [GitHub Personal Access Token](https://github.com/settings/tokens) (optional — only needed for rate limits or private repos)
+   - **Fine-grained token**: Actions (read) permission on the repos you need
+   - **Classic token**: `repo` scope
+   - No token or scopes needed for public repos only
 4. Token gets validated on save — the popup turns green when you're connected
 
 ## Development
