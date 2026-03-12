@@ -17,6 +17,8 @@ A GitHub Personal Access Token (PAT) may be stored in your browser's local exten
 - Is never shared with other extensions or websites
 - Can be removed at any time from the extension's options page
 
+The token is used solely to list repository workflows via the GitHub Actions API. For private repos, the minimum required permission is Actions (read) for fine-grained tokens, or `repo` scope for classic tokens. No token is needed for public repos.
+
 Workflow data fetched from GitHub's API is cached locally for performance and automatically expires after 24 hours.
 
 ## Website Content
