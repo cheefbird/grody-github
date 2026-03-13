@@ -24,13 +24,13 @@ importers:
         specifier: 4.4.5
         version: 4.4.5(picomatch@4.0.3)(svelte@5.53.11)(typescript@5.9.3)
       tslib:
-        specifier: ^2.8.1
+        specifier: 2.8.1
         version: 2.8.1
       typescript:
-        specifier: ^5.9.3
+        specifier: 5.9.3
         version: 5.9.3
       vitest:
-        specifier: ^4.1.0
+        specifier: 4.1.0
         version: 4.1.0(@types/node@25.4.0)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1))
       wxt:
         specifier: 0.20.18
