@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte";
+import { enabledStorage, pollIntervalStorage } from "@/lib/github-status";
 import { tokenStorage } from "@/lib/storage";
 
 let token = $state("");
@@ -7,6 +8,9 @@ let status = $state<"idle" | "saving" | "success" | "error">("idle");
 let statusMessage = $state("");
 let loaded = $state(false);
 let connected = $derived(loaded && token.trim().length > 0);
+let statusEnabled = $state(true);
+let pollInterval = $state(15);
+const POLL_OPTIONS = [1, 5, 10, 15, 30, 45, 60];
 
 // Reset status when user edits the token
 $effect(() => {
@@ -22,6 +26,12 @@ onMount(async () => {
     status = "error";
     statusMessage = "Failed to load saved token from storage.";
   }
+  try {
+    statusEnabled = await enabledStorage.getValue();
+    pollInterval = await pollIntervalStorage.getValue();
+  } catch (err) {
+    console.error("[grody-github] Failed to load status settings:", err);
+  }
   loaded = true;
 });
 
@@ -33,6 +43,17 @@ async function validateToken(pat: string): Promise<boolean> {
     },
   });
   return response.ok;
+}
+
+async function handleStatusToggle() {
+  statusEnabled = !statusEnabled;
+  await enabledStorage.setValue(statusEnabled);
+}
+
+async function handleIntervalChange(event: Event) {
+  const value = Number((event.target as HTMLSelectElement).value);
+  pollInterval = value;
+  await pollIntervalStorage.setValue(value);
 }
 
 async function handleSave() {
@@ -132,6 +153,34 @@ async function handleSave() {
       <span role="alert" class="msg error">Error: {statusMessage}</span>
     {/if}
   </form>
+
+  <hr style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);" />
+
+  <h2>GitHub Status Notifications</h2>
+  <p>Show a banner on GitHub pages when there's an active incident.</p>
+
+  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+    <label for="status-enabled" style="margin:0;">Enabled</label>
+    <input
+      id="status-enabled"
+      type="checkbox"
+      checked={statusEnabled}
+      onchange={handleStatusToggle}
+    />
+  </div>
+
+  <label for="poll-interval">Check for incidents every</label>
+  <select
+    id="poll-interval"
+    value={pollInterval}
+    onchange={handleIntervalChange}
+    disabled={!statusEnabled}
+    style="padding:0.3rem 0.5rem;font-size:0.85rem;border:1px solid light-dark(#d0d7de, #30363d);border-radius:6px;background:light-dark(#ffffff, #161b22);color:light-dark(#24292f, #e6edf3);"
+  >
+    {#each POLL_OPTIONS as opt}
+      <option value={opt}>{opt} {opt === 1 ? "minute" : "minutes"}</option>
+    {/each}
+  </select>
 </main>
 
 <style>
@@ -214,5 +263,16 @@ async function handleSave() {
   }
   .error {
     color: light-dark(#cf222e, #f85149);
+  }
+  h2 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+  }
+  select {
+    cursor: pointer;
+  }
+  select:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 </style>

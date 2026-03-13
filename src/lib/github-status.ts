@@ -55,7 +55,11 @@ export const dismissedIncidentsStorage = storage.defineItem<string[]>(
   { fallback: [] },
 );
 
-const UNRESOLVED_STATUSES = new Set(["investigating", "identified", "monitoring"]);
+const UNRESOLVED_STATUSES = new Set([
+  "investigating",
+  "identified",
+  "monitoring",
+]);
 
 // biome-ignore lint/suspicious/noExplicitAny: raw API response shape validated by transform
 export function transformSummary(raw: any): GitHubStatusData {
