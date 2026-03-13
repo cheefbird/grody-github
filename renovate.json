@@ -1,4 +1,24 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"]
+  "extends": ["config:best-practices"],
+  "schedule": ["after 10pm and before 5am every weekday", "every weekend"],
+  "prConcurrentLimit": 3,
+  "automerge": true,
+  "automergeStrategy": "squash",
+  "major": {
+    "automerge": false
+  },
+  "packageRules": [
+    {
+      "description": "Group extension framework packages (WXT + Svelte + bridge module share peer deps)",
+      "matchPackageNames": [
+        "wxt",
+        "@wxt-dev/module-svelte",
+        "svelte",
+        "svelte-check",
+        "@tsconfig/svelte"
+      ],
+      "groupName": "extension framework"
+    }
+  ]
 }
