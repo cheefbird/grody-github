@@ -54,3 +54,63 @@ export const dismissedIncidentsStorage = storage.defineItem<string[]>(
   "local:github-status:dismissed-incidents",
   { fallback: [] },
 );
+
+const UNRESOLVED_STATUSES = new Set(["investigating", "identified", "monitoring"]);
+
+// biome-ignore lint/suspicious/noExplicitAny: raw API response shape validated by transform
+export function transformSummary(raw: any): GitHubStatusData {
+  const incidents: StatusIncident[] = [];
+
+  for (const incident of raw.incidents ?? []) {
+    if (!UNRESOLVED_STATUSES.has(incident.status)) continue;
+
+    const components: StatusComponent[] = (incident.components ?? [])
+      .filter((c: { status: string }) => c.status !== "operational")
+      .map((c: { name: string; status: string }) => ({
+        name: c.name,
+        status: c.status as ComponentStatus,
+      }));
+
+    incidents.push({
+      id: incident.id,
+      name: incident.name,
+      status: incident.status as IncidentStatus,
+      impact: incident.impact as StatusIndicator,
+      shortlink: incident.shortlink,
+      started_at: incident.started_at,
+      components,
+    });
+  }
+
+  return {
+    indicator: raw.status?.indicator ?? "none",
+    incidents,
+  };
+}
+
+const STATUS_API_URL = "https://www.githubstatus.com/api/v2/summary.json";
+
+export type FetchStatusResult =
+  | { ok: true; data: GitHubStatusData }
+  | { ok: false; reason: "network-error" | "api-error" };
+
+export async function fetchGitHubStatus(): Promise<FetchStatusResult> {
+  try {
+    const response = await fetch(STATUS_API_URL);
+    if (!response.ok) {
+      return { ok: false, reason: "api-error" };
+    }
+    const raw = await response.json();
+    return { ok: true, data: transformSummary(raw) };
+  } catch {
+    return { ok: false, reason: "network-error" };
+  }
+}
+
+export function pruneDismissedIncidents(
+  dismissed: string[],
+  activeIncidentIds: string[],
+): string[] {
+  const activeSet = new Set(activeIncidentIds);
+  return dismissed.filter((id) => activeSet.has(id));
+}

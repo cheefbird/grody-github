@@ -17,7 +17,7 @@ export default defineConfig({
   },
   manifest: {
     name: "Grody Github",
-    permissions: ["storage"],
+    permissions: ["storage", "alarms"],
     browser_specific_settings: {
       gecko: {
         id: "grody-github@cheefbird",
