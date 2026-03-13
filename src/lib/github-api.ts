@@ -16,9 +16,9 @@ type WorkflowApiResponse = {
   }>;
 };
 
-class GitHubApiError extends Error {
+export class GitHubApiError extends Error {
   constructor(
-    public status: number,
+    public readonly status: number,
     statusText: string,
   ) {
     super(`GitHub API error: ${status} ${statusText}`);
@@ -28,7 +28,7 @@ class GitHubApiError extends Error {
 
 const MAX_PAGES = 10;
 
-function parseLinkHeader(header: string | null): string | null {
+export function parseLinkHeader(header: string | null): string | null {
   if (!header) return null;
   const match = /<([^>]+)>;\s*rel="next"/.exec(header);
   if (!match) return null;
@@ -38,7 +38,7 @@ function parseLinkHeader(header: string | null): string | null {
   return nextUrl;
 }
 
-async function fetchAllWorkflows(
+export async function fetchAllWorkflows(
   owner: string,
   repo: string,
   token: string | null,
