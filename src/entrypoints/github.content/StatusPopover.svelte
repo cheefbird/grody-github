@@ -64,7 +64,7 @@
 <div
   bind:this={popoverEl}
   tabindex="0"
-  style="position:absolute;top:100%;right:16px;max-width:360px;width:90vw;background:#161b22;border:1px solid #30363d;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px 16px;z-index:100;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;color:#e6edf3;margin-top:4px;"
+  style="position:absolute;top:100%;left:0;max-width:360px;width:90vw;background:#161b22;border:1px solid #30363d;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px 16px;z-index:100;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;color:#e6edf3;margin-top:4px;"
 >
   {#each incidents as incident, i}
     {#if i > 0}
