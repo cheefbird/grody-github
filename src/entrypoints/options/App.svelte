@@ -124,17 +124,25 @@ async function handleSave() {
   <label for="pat">GitHub Personal Access Token (optional)</label>
   <p>
     Add a token to avoid rate limits or filter workflows in private repos.
-    <button type="button" class="link-btn" onclick={() => showTokenHelp = !showTokenHelp}>
+    <button
+      type="button"
+      class="link-btn"
+      onclick={() => showTokenHelp = !showTokenHelp}
+    >
       {showTokenHelp ? "Hide details" : "Learn more"}
     </button>
   </p>
   {#if showTokenHelp}
     <ul class="scope-list">
       <li>
-        <strong>Fine-grained token</strong>: grant <strong>Actions (read)</strong> on the repos you need. No permissions needed for public repos.
+        <strong>Fine-grained token</strong>: grant
+        <strong>Actions (read)</strong>
+        on the repos you need. No permissions needed for public repos.
       </li>
       <li>
-        <strong>Classic token</strong>: <code>repo</code> scope for private repos. No scopes needed for public repos.</li>
+        <strong>Classic token</strong>: <code>repo</code> scope for private
+        repos. No scopes needed for public repos.
+      </li>
     </ul>
     <p class="hint">
       Your token is kept in local browser storage and is only ever sent to
@@ -142,7 +150,8 @@ async function handleSave() {
       <a
         href="https://github.com/settings/personal-access-tokens/new"
         target="_blank"
-        rel="noopener noreferrer">fine-grained personal access token</a
+        rel="noopener noreferrer"
+        >fine-grained personal access token</a
       >
       scoped to just the repos you need.
     </p>
@@ -157,7 +166,7 @@ async function handleSave() {
       });
     }}
   >
-    <input id="pat" type="password" bind:value={token} placeholder="ghp_..." />
+    <input id="pat" type="password" bind:value={token} placeholder="ghp_...">
 
     <button type="submit" disabled={status === "saving"}>
       {status === "saving" ? "Validating..." : "Save"}
@@ -171,19 +180,23 @@ async function handleSave() {
     {/if}
   </form>
 
-  <hr style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);" />
+  <hr
+    style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
+  >
 
   <h2>GitHub Status Notifications</h2>
   <p>Show a banner on GitHub pages when there's an active incident.</p>
 
-  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+  <div
+    style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"
+  >
     <label for="status-enabled" style="margin:0;">Enabled</label>
     <input
       id="status-enabled"
       type="checkbox"
       checked={statusEnabled}
       onchange={handleStatusToggle}
-    />
+    >
   </div>
 
   <label for="poll-interval">Check for incidents every</label>
@@ -201,107 +214,107 @@ async function handleSave() {
 </main>
 
 <style>
-  main {
-    max-width: 420px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color-scheme: light dark;
-    color: light-dark(#24292f, #e6edf3);
-    background: transparent;
-  }
-  h1 {
-    font-size: 1.15rem;
-    margin: 0 0 0.75rem;
-  }
-  label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
-  p {
-    color: light-dark(#656d76, #8b949e);
-    margin: 0 0 0.5rem;
-  }
-  .connected {
-    color: light-dark(#1a7f37, #3fb950);
-    font-weight: 600;
-    margin: 0 0 0.5rem;
-  }
-  .scope-list {
-    color: light-dark(#656d76, #8b949e);
-    margin: 0 0 0.5rem;
-    padding-left: 1.25rem;
-    font-size: 0.8rem;
-  }
-  .hint {
-    font-size: 0.8rem;
-    color: light-dark(#656d76, #8b949e);
-  }
-  .hint a {
-    color: light-dark(#0969da, #58a6ff);
-  }
-  input {
-    width: 100%;
-    padding: 0.4rem 0.5rem;
-    font-size: 0.85rem;
-    border: 1px solid light-dark(#d0d7de, #30363d);
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
-    box-sizing: border-box;
-    background: light-dark(#ffffff, #161b22);
-    color: light-dark(#24292f, #e6edf3);
-  }
-  button {
-    padding: 0.4rem 1rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid light-dark(#d0d7de, #30363d);
-    border-radius: 6px;
-    background: light-dark(#f6f8fa, #21262d);
-    color: light-dark(#24292f, #e6edf3);
-  }
-  button:hover {
-    background: light-dark(#e1e4e8, #30363d);
-  }
-  button:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  .msg {
-    margin-left: 0.75rem;
-    font-size: 0.85rem;
-  }
-  .success {
-    color: light-dark(#1a7f37, #3fb950);
-  }
-  .error {
-    color: light-dark(#cf222e, #f85149);
-  }
-  h2 {
-    font-size: 1rem;
-    margin: 0 0 0.5rem;
-  }
-  select {
-    cursor: pointer;
-  }
-  select:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  .link-btn {
-    background: none;
-    border: none;
-    color: light-dark(#0969da, #58a6ff);
-    cursor: pointer;
-    font-size: inherit;
-    padding: 0;
-    font-weight: 400;
-  }
-  .link-btn:hover {
-    text-decoration: underline;
-  }
+main {
+  max-width: 420px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color-scheme: light dark;
+  color: light-dark(#24292f, #e6edf3);
+  background: transparent;
+}
+h1 {
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+p {
+  color: light-dark(#656d76, #8b949e);
+  margin: 0 0 0.5rem;
+}
+.connected {
+  color: light-dark(#1a7f37, #3fb950);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.scope-list {
+  color: light-dark(#656d76, #8b949e);
+  margin: 0 0 0.5rem;
+  padding-left: 1.25rem;
+  font-size: 0.8rem;
+}
+.hint {
+  font-size: 0.8rem;
+  color: light-dark(#656d76, #8b949e);
+}
+.hint a {
+  color: light-dark(#0969da, #58a6ff);
+}
+input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+  border: 1px solid light-dark(#d0d7de, #30363d);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+  background: light-dark(#ffffff, #161b22);
+  color: light-dark(#24292f, #e6edf3);
+}
+button {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid light-dark(#d0d7de, #30363d);
+  border-radius: 6px;
+  background: light-dark(#f6f8fa, #21262d);
+  color: light-dark(#24292f, #e6edf3);
+}
+button:hover {
+  background: light-dark(#e1e4e8, #30363d);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.msg {
+  margin-left: 0.75rem;
+  font-size: 0.85rem;
+}
+.success {
+  color: light-dark(#1a7f37, #3fb950);
+}
+.error {
+  color: light-dark(#cf222e, #f85149);
+}
+h2 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+select {
+  cursor: pointer;
+}
+select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: light-dark(#0969da, #58a6ff);
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  font-weight: 400;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
 </style>

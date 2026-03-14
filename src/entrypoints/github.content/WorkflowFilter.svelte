@@ -1,154 +1,150 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { requestWorkflows } from "@/lib/github-api";
-  import type { Workflow, WorkflowResult } from "@/lib/types";
+import { onMount } from "svelte";
+import { requestWorkflows } from "@/lib/github-api";
+import type { Workflow, WorkflowResult } from "@/lib/types";
 
-  let {
-    owner,
-    repo,
-    navList,
-  }: { owner: string; repo: string; navList: HTMLElement } = $props();
+let {
+  owner,
+  repo,
+  navList,
+}: { owner: string; repo: string; navList: HTMLElement } = $props();
 
-  let query = $state("");
-  let workflows: Workflow[] = $state([]);
-  let loaded = $state(false);
-  let hint = $state<string | null>(null);
-  let inputEl: HTMLInputElement | undefined = $state();
+let query = $state("");
+let workflows: Workflow[] = $state([]);
+let loaded = $state(false);
+let hint = $state<string | null>(null);
+let inputEl: HTMLInputElement | undefined = $state();
 
-  // Internal DOM references (non-reactive, not used in template)
-  let workflowsSection: HTMLElement | null = null;
-  let innerUl: HTMLElement | null = null;
-  let showMoreContainer: HTMLElement | null = null;
-  let originalChildren: Node[] = [];
+// Internal DOM references (non-reactive, not used in template)
+let workflowsSection: HTMLElement | null = null;
+let innerUl: HTMLElement | null = null;
+let showMoreContainer: HTMLElement | null = null;
+let originalChildren: Node[] = [];
 
-  function findDomElements(): boolean {
-    const allWorkflowsItem = navList.querySelector(
-      ":scope > li.ActionListItem",
-    );
-    workflowsSection = navList.querySelector(":scope > li:has(nav-list-group)");
-    if (!allWorkflowsItem || !workflowsSection) return false;
+function findDomElements(): boolean {
+  const allWorkflowsItem = navList.querySelector(":scope > li.ActionListItem");
+  workflowsSection = navList.querySelector(":scope > li:has(nav-list-group)");
+  if (!allWorkflowsItem || !workflowsSection) return false;
 
-    innerUl = workflowsSection.querySelector("ul");
-    showMoreContainer = workflowsSection.querySelector(
-      '[data-action*="nav-list-group#showMore"]',
-    );
-    if (!innerUl || !showMoreContainer) return false;
+  innerUl = workflowsSection.querySelector("ul");
+  showMoreContainer = workflowsSection.querySelector(
+    '[data-action*="nav-list-group#showMore"]',
+  );
+  if (!innerUl || !showMoreContainer) return false;
 
-    return true;
+  return true;
+}
+
+function cloneOriginalChildren() {
+  if (!innerUl) return;
+  originalChildren = [...innerUl.children].map((child) =>
+    child.cloneNode(true),
+  );
+}
+
+function restoreOriginal() {
+  if (!innerUl) return;
+  innerUl.replaceChildren(
+    ...originalChildren.map((child) => child.cloneNode(true)),
+  );
+}
+
+function buildWorkflowHref(workflow: Workflow): string {
+  const filename = workflow.path.split("/").pop() ?? "";
+  return `/${owner}/${repo}/actions/workflows/${filename}`;
+}
+
+function filterWorkflows(searchQuery: string) {
+  if (!innerUl) return;
+
+  if (!searchQuery.trim()) {
+    restoreOriginal();
+    return;
   }
 
-  function cloneOriginalChildren() {
-    if (!innerUl) return;
-    originalChildren = [...innerUl.children].map((child) =>
-      child.cloneNode(true),
-    );
-  }
-
-  function restoreOriginal() {
-    if (!innerUl) return;
-    innerUl.replaceChildren(
-      ...originalChildren.map((child) => child.cloneNode(true)),
-    );
-  }
-
-  function buildWorkflowHref(workflow: Workflow): string {
+  const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = workflows.filter((workflow) => {
     const filename = workflow.path.split("/").pop() ?? "";
-    return `/${owner}/${repo}/actions/workflows/${filename}`;
+    return terms.every((term) =>
+      `${workflow.name} ${filename}`.toLowerCase().includes(term),
+    );
+  });
+
+  if (matches.length > 0) {
+    const elements = matches.map((workflow) => {
+      const li = document.createElement("li");
+      li.className = "ActionListItem";
+      const a = document.createElement("a");
+      a.className = "ActionListContent";
+      a.setAttribute("data-turbo-frame", "repo-content-turbo-frame");
+      a.href = buildWorkflowHref(workflow);
+      const span = document.createElement("span");
+      span.className = "ActionListItem-label ActionListItem-label--truncate";
+      span.textContent = workflow.name;
+      a.appendChild(span);
+      li.appendChild(a);
+      return li;
+    });
+    innerUl.replaceChildren(...elements);
+  } else {
+    const li = document.createElement("li");
+    li.className = "py-2 px-3";
+    const em = document.createElement("em");
+    em.className = "color-fg-muted";
+    em.textContent = "No workflows match your filter.";
+    li.appendChild(em);
+    innerUl.replaceChildren(li);
   }
+}
 
-  function filterWorkflows(searchQuery: string) {
-    if (!innerUl) return;
+function handleClear() {
+  query = "";
+  inputEl?.focus();
+}
 
-    if (!searchQuery.trim()) {
-      restoreOriginal();
-      return;
-    }
+// Debounced filter via $effect — re-runs and auto-cancels on query change
+$effect(() => {
+  const currentQuery = query;
+  const timeout = setTimeout(() => filterWorkflows(currentQuery), 150);
+  return () => clearTimeout(timeout);
+});
 
-    const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = workflows.filter((workflow) => {
-      const filename = workflow.path.split("/").pop() ?? "";
-      return terms.every((term) =>
-        `${workflow.name} ${filename}`.toLowerCase().includes(term),
-      );
+onMount(() => {
+  if (!findDomElements()) return;
+  cloneOriginalChildren();
+
+  requestWorkflows(owner, repo)
+    .then((result: WorkflowResult) => {
+      if (!result.ok) {
+        if (result.reason === "rate-limited") {
+          hint = "Rate limited — add a token in extension options";
+        } else if (result.reason === "auth-required") {
+          hint = "Private repo — add a token in extension options";
+        }
+        return;
+      }
+      if (result.workflows.length === 0) return;
+      workflows = result.workflows;
+      loaded = true;
+      if (showMoreContainer) {
+        showMoreContainer.hidden = true;
+      }
+    })
+    .catch((err) => {
+      console.error("[grody-github] Workflow filter init failed:", err);
     });
 
-    if (matches.length > 0) {
-      const elements = matches.map((workflow) => {
-        const li = document.createElement("li");
-        li.className = "ActionListItem";
-        const a = document.createElement("a");
-        a.className = "ActionListContent";
-        a.setAttribute("data-turbo-frame", "repo-content-turbo-frame");
-        a.href = buildWorkflowHref(workflow);
-        const span = document.createElement("span");
-        span.className = "ActionListItem-label ActionListItem-label--truncate";
-        span.textContent = workflow.name;
-        a.appendChild(span);
-        li.appendChild(a);
-        return li;
-      });
-      innerUl.replaceChildren(...elements);
-    } else {
-      const li = document.createElement("li");
-      li.className = "py-2 px-3";
-      const em = document.createElement("em");
-      em.className = "color-fg-muted";
-      em.textContent = "No workflows match your filter.";
-      li.appendChild(em);
-      innerUl.replaceChildren(li);
+  return () => {
+    if (showMoreContainer) {
+      showMoreContainer.hidden = false;
     }
-  }
-
-  function handleClear() {
-    query = "";
-    inputEl?.focus();
-  }
-
-  // Debounced filter via $effect — re-runs and auto-cancels on query change
-  $effect(() => {
-    const currentQuery = query;
-    const timeout = setTimeout(() => filterWorkflows(currentQuery), 150);
-    return () => clearTimeout(timeout);
-  });
-
-  onMount(() => {
-    if (!findDomElements()) return;
-    cloneOriginalChildren();
-
-    requestWorkflows(owner, repo)
-      .then((result: WorkflowResult) => {
-        if (!result.ok) {
-          if (result.reason === "rate-limited") {
-            hint = "Rate limited — add a token in extension options";
-          } else if (result.reason === "auth-required") {
-            hint = "Private repo — add a token in extension options";
-          }
-          return;
-        }
-        if (result.workflows.length === 0) return;
-        workflows = result.workflows;
-        loaded = true;
-        if (showMoreContainer) {
-          showMoreContainer.hidden = true;
-        }
-      })
-      .catch((err) => {
-        console.error("[grody-github] Workflow filter init failed:", err);
-      });
-
-    return () => {
-      if (showMoreContainer) {
-        showMoreContainer.hidden = false;
-      }
-      restoreOriginal();
-    };
-  });
+    restoreOriginal();
+  };
+});
 </script>
 
 {#if hint}
-  <li class="px-3 py-2">
-    <em class="color-fg-muted f6">{hint}</em>
-  </li>
+  <li class="px-3 py-2"><em class="color-fg-muted f6">{hint}</em></li>
 {/if}
 {#if loaded}
   <li class="p-2">
@@ -174,7 +170,7 @@
         aria-label="Filter workflows"
         form=""
         bind:value={query}
-      />
+      >
       {#if query}
         <button
           type="button"

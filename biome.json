@@ -10,7 +10,8 @@
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "lineWidth": 80
   },
   "linter": {
     "enabled": true,
@@ -31,7 +32,10 @@
     }
   ],
   "html": {
-    "experimentalFullSupportEnabled": true
+    "experimentalFullSupportEnabled": true,
+    "formatter": {
+      "enabled": true
+    }
   },
   "javascript": {
     "formatter": {
