@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { GitHubStatusData, StatusIndicator } from "@/lib/github-status";
   import { dismissedIncidentsStorage } from "@/lib/github-status";
-  import StatusStrip from "./StatusStrip.svelte";
   import StatusPopover from "./StatusPopover.svelte";
+  import StatusStrip from "./StatusStrip.svelte";
 
   let { statusData, dismissedIds: initialDismissedIds }: {
     statusData: GitHubStatusData | null;
@@ -12,14 +12,16 @@
   let localDismissedIds = $state<string[]>([]);
 
   $effect(() => {
-    localDismissedIds = initialDismissedIds;
+    localDismissedIds = Array.isArray(initialDismissedIds) ? initialDismissedIds : [];
   });
 
   let viewState = $state<"hidden" | "banner" | "strip">("hidden");
   let popoverOpen = $state(false);
 
+  let dismissed = $derived(new Set(Array.isArray(localDismissedIds) ? localDismissedIds : []));
+
   let activeIncidents = $derived(
-    statusData?.incidents.filter((i) => !localDismissedIds.includes(i.id)) ?? []
+    statusData?.incidents.filter((i) => !dismissed.has(i.id)) ?? []
   );
 
   let hasAnyIncidents = $derived(

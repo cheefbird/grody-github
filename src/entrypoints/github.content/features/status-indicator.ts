@@ -1,18 +1,16 @@
 import { mount, unmount } from "svelte";
 import type { ContentScriptContext } from "#imports";
-import StatusBanner from "../StatusBanner.svelte";
 import {
   dismissedIncidentsStorage,
   enabledStorage,
-  statusStorage,
   type GitHubStatusData,
+  statusStorage,
 } from "@/lib/github-status";
+import StatusBanner from "../StatusBanner.svelte";
 
 function findHeader(): HTMLElement | null {
-  return (
-    document.querySelector<HTMLElement>("header.AppHeader") ??
-    document.querySelector<HTMLElement>("header[class*='appHeader']") ??
-    document.querySelector<HTMLElement>("div.Header")
+  return document.querySelector<HTMLElement>(
+    "header.AppHeader, header[class*='appHeader'], header.HeaderMktg, div.Header",
   );
 }
 
@@ -28,7 +26,7 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
   header.after(container);
 
   const stored = await statusStorage.getValue();
-  const dismissed = await dismissedIncidentsStorage.getValue();
+  const dismissed = (await dismissedIncidentsStorage.getValue()) ?? [];
 
   let currentApp: ReturnType<typeof mount> | null = mount(StatusBanner, {
     target: container,
