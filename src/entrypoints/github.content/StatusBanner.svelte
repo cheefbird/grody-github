@@ -43,6 +43,21 @@
     return `${names.slice(0, 3).join(", ")} +${names.length - 3} more`;
   });
 
+  const STATUS_LABELS: Record<string, string> = {
+    investigating: "Investigating",
+    identified: "Identified",
+    monitoring: "Monitoring",
+  };
+
+  let statusLabel = $derived.by(() => {
+    if (!statusData || !hasIncidents) return "";
+    for (const level of SEVERITY_ORDER) {
+      const match = statusData.incidents.find((i) => i.impact === level);
+      if (match) return STATUS_LABELS[match.status] ?? match.status;
+    }
+    return statusData.incidents[0]?.status ?? "";
+  });
+
   let accentColor = $derived.by(() => {
     if (severity === "critical") return "#da3633";
     if (severity === "major") return "#f0883e";
@@ -76,7 +91,7 @@
       <span class="severity-dot" style:color={accentColor}>&#9679;</span>
       <div class="info">
         <span class="title">GitHub incident — {summaryText}</span>
-        <span class="subtitle">Investigating</span>
+        <span class="subtitle">{statusLabel}</span>
       </div>
       <span class="actions">
         <button

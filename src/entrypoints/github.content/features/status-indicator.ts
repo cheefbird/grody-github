@@ -51,8 +51,14 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
     remount(newValue?.data ?? null, collapsed);
   });
 
+  const unwatchCollapsed = collapsedStorage.watch(async (newCollapsed) => {
+    const stored = await statusStorage.getValue();
+    remount(stored?.data ?? null, newCollapsed);
+  });
+
   ctx.onInvalidated(() => {
     unwatchStatus();
+    unwatchCollapsed();
     if (currentApp) {
       unmount(currentApp);
       currentApp = null;

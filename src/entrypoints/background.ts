@@ -49,24 +49,26 @@ export default defineBackground(() => {
 
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === ALARM_NAME) {
-      pollGitHubStatus();
+      pollGitHubStatus().catch(() => {});
     }
   });
 
   enabledStorage.watch((enabled) => {
     if (enabled) {
-      startPolling();
+      startPolling().catch(() => {});
     } else {
-      stopPolling();
+      stopPolling().catch(() => {});
     }
   });
 
   pollIntervalStorage.watch(async (interval) => {
-    const enabled = await enabledStorage.getValue();
-    if (!enabled) return;
-    await browser.alarms.clear(ALARM_NAME);
-    await browser.alarms.create(ALARM_NAME, { periodInMinutes: interval });
+    try {
+      const enabled = await enabledStorage.getValue();
+      if (!enabled) return;
+      await browser.alarms.clear(ALARM_NAME);
+      await browser.alarms.create(ALARM_NAME, { periodInMinutes: interval });
+    } catch {}
   });
 
-  startPolling();
+  startPolling().catch(() => {});
 });

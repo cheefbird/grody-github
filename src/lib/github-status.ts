@@ -94,17 +94,24 @@ const STATUS_API_URL = "https://www.githubstatus.com/api/v2/summary.json";
 
 export type FetchStatusResult =
   | { ok: true; data: GitHubStatusData }
-  | { ok: false; reason: "network-error" | "api-error" };
+  | { ok: false; reason: "network-error" | "api-error" | "parse-error" };
 
 export async function fetchGitHubStatus(): Promise<FetchStatusResult> {
+  let response: Response;
   try {
-    const response = await fetch(STATUS_API_URL);
-    if (!response.ok) {
-      return { ok: false, reason: "api-error" };
-    }
+    response = await fetch(STATUS_API_URL);
+  } catch {
+    return { ok: false, reason: "network-error" };
+  }
+
+  if (!response.ok) {
+    return { ok: false, reason: "api-error" };
+  }
+
+  try {
     const raw = await response.json();
     return { ok: true, data: transformSummary(raw) };
   } catch {
-    return { ok: false, reason: "network-error" };
+    return { ok: false, reason: "parse-error" };
   }
 }
