@@ -11,6 +11,7 @@ function makeSummaryResponse(overrides: {
     shortlink: string;
     started_at: string;
     updated_at?: string;
+    resolved_at?: string | null;
     components: Array<{ name: string; status: string }>;
   }>;
 }) {
@@ -59,7 +60,7 @@ describe("transformSummary", () => {
     ]);
   });
 
-  it("filters out resolved and postmortem incidents", () => {
+  it("filters out postmortem incidents but includes resolved", () => {
     const raw = makeSummaryResponse({
       indicator: "none",
       incidents: [
@@ -70,6 +71,7 @@ describe("transformSummary", () => {
           impact: "minor",
           shortlink: "https://stspg.io/r1",
           started_at: "2026-03-13T08:00:00Z",
+          resolved_at: "2026-03-13T09:00:00Z",
           components: [{ name: "Actions", status: "operational" }],
         },
         {
@@ -84,7 +86,50 @@ describe("transformSummary", () => {
       ],
     });
     const result = transformSummary(raw);
-    expect(result.incidents).toHaveLength(0);
+    expect(result.incidents).toHaveLength(1);
+    expect(result.incidents[0].status).toBe("resolved");
+    expect(result.incidents[0].resolved_at).toBe("2026-03-13T09:00:00Z");
+    expect(result.incidents[0].components).toEqual([]);
+  });
+
+  it("omits resolved_at for active incidents", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "active1",
+          name: "Active issue",
+          status: "investigating",
+          impact: "minor",
+          shortlink: "https://stspg.io/a1",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents[0].resolved_at).toBeUndefined();
+  });
+
+  it("omits resolved_at when API provides null", () => {
+    const raw = makeSummaryResponse({
+      indicator: "none",
+      incidents: [
+        {
+          id: "resolved-no-ts",
+          name: "Resolved without timestamp",
+          status: "resolved",
+          impact: "minor",
+          shortlink: "https://stspg.io/rn",
+          started_at: "2026-03-13T08:00:00Z",
+          resolved_at: null,
+          components: [],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents[0].status).toBe("resolved");
+    expect(result.incidents[0].resolved_at).toBeUndefined();
   });
 
   it("includes components with under_maintenance status", () => {
@@ -343,6 +388,54 @@ describe("fetchGitHubStatus", () => {
 
     const result = await fetchGitHubStatus();
     expect(result).toEqual({ ok: false, reason: "parse-error" });
+  });
+
+  it("includes resolved incidents with resolved_at in fetch result", async () => {
+    const raw = makeSummaryResponse({
+      indicator: "none",
+      incidents: [
+        {
+          id: "r1",
+          name: "Resolved incident",
+          status: "resolved",
+          impact: "minor",
+          shortlink: "https://stspg.io/r1",
+          started_at: "2026-03-13T08:00:00Z",
+          updated_at: "2026-03-13T09:30:00Z",
+          resolved_at: "2026-03-13T10:00:00Z",
+          components: [],
+        },
+      ],
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(raw),
+      }),
+    );
+
+    const result = await fetchGitHubStatus();
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        indicator: "none",
+        incidents: [
+          {
+            id: "r1",
+            name: "Resolved incident",
+            status: "resolved",
+            impact: "minor",
+            shortlink: "https://stspg.io/r1",
+            started_at: "2026-03-13T08:00:00Z",
+            updated_at: "2026-03-13T09:30:00Z",
+            resolved_at: "2026-03-13T10:00:00Z",
+            components: [],
+          },
+        ],
+      },
+    });
   });
 
   it("fetches from the correct URL", async () => {
