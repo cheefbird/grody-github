@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { GitHubStatusData, StatusIndicator } from "@/lib/github-status";
-  import { collapsedStorage } from "@/lib/github-status";
+  import { collapsedStorage, type GitHubStatusData, indicatorColor, type StatusIndicator } from "@/lib/github-status";
   import StatusPopover from "./StatusPopover.svelte";
   import StatusStrip from "./StatusStrip.svelte";
 
@@ -58,11 +57,7 @@
     return statusData.incidents[0]?.status ?? "";
   });
 
-  let accentColor = $derived.by(() => {
-    if (severity === "critical") return "#da3633";
-    if (severity === "major") return "#f0883e";
-    return "#d29922";
-  });
+  let accentColor = $derived(indicatorColor(severity));
 
   function handleCollapse() {
     collapsed = true;

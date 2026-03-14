@@ -21,10 +21,7 @@ async function pollGitHubStatus() {
   const result = await fetchGitHubStatus();
   if (!result.ok) return;
 
-  await statusStorage.setValue({
-    data: result.data,
-    timestamp: Date.now(),
-  });
+  await statusStorage.setValue(result.data);
 
   if (result.data.incidents.length === 0) {
     await collapsedStorage.setValue(false);
@@ -76,6 +73,7 @@ export default defineBackground(() => {
       await browser.alarms.create(ALARM_NAME, {
         periodInMinutes: sanitizeInterval(interval),
       });
+      await pollGitHubStatus();
     } catch {}
   });
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import type { StatusIncident } from "@/lib/github-status";
+  import { componentStatusColor, type StatusIncident } from "@/lib/github-status";
 
   let { incidents, onclose }: {
     incidents: StatusIncident[];
@@ -8,14 +8,6 @@
   } = $props();
 
   let popoverEl: HTMLDivElement | undefined = $state();
-
-  function statusColor(status: string): string {
-    if (status === "major_outage") return "#f85149";
-    if (status === "partial_outage") return "#da3633";
-    if (status === "degraded_performance") return "#f0883e";
-    if (status === "under_maintenance") return "#d29922";
-    return "#8b949e";
-  }
 
   function statusLabel(status: string): string {
     return status
@@ -26,6 +18,7 @@
 
   function timeSince(startedAt: string): string {
     const ms = Date.now() - new Date(startedAt).getTime();
+    if (!Number.isFinite(ms) || ms < 0) return "just now";
     const minutes = Math.floor(ms / 60_000);
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
@@ -72,9 +65,9 @@
     </div>
     {#each incident.components as component}
       <div class="component-row">
-        <span class="component-dot" style:background={statusColor(component.status)}></span>
+        <span class="component-dot" style:background={componentStatusColor(component.status)}></span>
         <span>{component.name}</span>
-        <span class="component-status" style:color={statusColor(component.status)}>
+        <span class="component-status" style:color={componentStatusColor(component.status)}>
           {statusLabel(component.status)}
         </span>
       </div>

@@ -21,6 +21,9 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
   const header = findHeader();
   if (!header) return;
 
+  const existing = document.getElementById("grody-github-status");
+  if (existing) existing.remove();
+
   const container = document.createElement("div");
   container.id = "grody-github-status";
   header.after(container);
@@ -31,7 +34,7 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
   let currentApp: ReturnType<typeof mount> | null = mount(StatusBanner, {
     target: container,
     props: {
-      statusData: stored?.data ?? null,
+      statusData: stored ?? null,
       collapsed,
     },
   });
@@ -48,12 +51,12 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
 
   const unwatchStatus = statusStorage.watch(async (newValue) => {
     const collapsed = (await collapsedStorage.getValue()) ?? false;
-    remount(newValue?.data ?? null, collapsed);
+    remount(newValue ?? null, collapsed);
   });
 
   const unwatchCollapsed = collapsedStorage.watch(async (newCollapsed) => {
     const stored = await statusStorage.getValue();
-    remount(stored?.data ?? null, newCollapsed);
+    remount(stored ?? null, newCollapsed);
   });
 
   ctx.onInvalidated(() => {

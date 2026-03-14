@@ -1,16 +1,12 @@
 <script lang="ts">
-  import type { StatusIndicator } from "@/lib/github-status";
+  import { indicatorColor, type StatusIndicator } from "@/lib/github-status";
 
   let { severity, onexpand }: {
     severity: StatusIndicator;
     onexpand: () => void;
   } = $props();
 
-  let accentColor = $derived.by(() => {
-    if (severity === "critical") return "#da3633";
-    if (severity === "major") return "#f0883e";
-    return "#d29922";
-  });
+  let accentColor = $derived(indicatorColor(severity));
 </script>
 
 <div class="strip" role="status" aria-label="GitHub incident active — click to expand">

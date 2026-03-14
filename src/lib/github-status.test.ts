@@ -106,6 +106,158 @@ describe("transformSummary", () => {
       { name: "Pages", status: "under_maintenance" },
     ]);
   });
+
+  it("handles empty object gracefully", () => {
+    const result = transformSummary({});
+    expect(result).toEqual({ indicator: "none", incidents: [] });
+  });
+
+  it("handles null fields gracefully", () => {
+    const result = transformSummary({ incidents: null, status: null });
+    expect(result).toEqual({ indicator: "none", incidents: [] });
+  });
+
+  it("handles incident missing components", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "no-comp",
+          name: "No components listed",
+          status: "investigating",
+          impact: "minor",
+          shortlink: "https://stspg.io/nc",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents).toHaveLength(1);
+    expect(result.incidents[0].components).toEqual([]);
+  });
+
+  it("includes incidents with identified status", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "ident1",
+          name: "Root cause found",
+          status: "identified",
+          impact: "minor",
+          shortlink: "https://stspg.io/id1",
+          started_at: "2026-03-13T09:00:00Z",
+          components: [{ name: "Actions", status: "partial_outage" }],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents).toHaveLength(1);
+    expect(result.incidents[0].status).toBe("identified");
+  });
+
+  it("preserves multiple concurrent incidents", () => {
+    const raw = makeSummaryResponse({
+      indicator: "critical",
+      incidents: [
+        {
+          id: "inc-a",
+          name: "Critical outage",
+          status: "investigating",
+          impact: "critical",
+          shortlink: "https://stspg.io/a",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [{ name: "Actions", status: "major_outage" }],
+        },
+        {
+          id: "inc-b",
+          name: "Minor degradation",
+          status: "monitoring",
+          impact: "minor",
+          shortlink: "https://stspg.io/b",
+          started_at: "2026-03-13T09:00:00Z",
+          components: [{ name: "Pages", status: "degraded_performance" }],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents).toHaveLength(2);
+    expect(result.incidents[0].impact).toBe("critical");
+    expect(result.incidents[1].impact).toBe("minor");
+  });
+
+  it("includes incident with all-operational components", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "early1",
+          name: "Early investigation",
+          status: "investigating",
+          impact: "minor",
+          shortlink: "https://stspg.io/e1",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [
+            { name: "Actions", status: "operational" },
+            { name: "Pages", status: "operational" },
+          ],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents).toHaveLength(1);
+    expect(result.incidents[0].components).toEqual([]);
+  });
+
+  it("defaults unknown indicator to none", () => {
+    const raw = makeSummaryResponse({ indicator: "maintenance" });
+    const result = transformSummary(raw);
+    expect(result.indicator).toBe("none");
+  });
+
+  it("defaults unknown impact to none", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "unk1",
+          name: "Unknown impact",
+          status: "investigating",
+          impact: "maintenance",
+          shortlink: "https://stspg.io/u1",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents[0].impact).toBe("none");
+  });
+
+  it("filters out components with unknown status", () => {
+    const raw = makeSummaryResponse({
+      indicator: "minor",
+      incidents: [
+        {
+          id: "unk-comp",
+          name: "Unknown component status",
+          status: "investigating",
+          impact: "minor",
+          shortlink: "https://stspg.io/uc",
+          started_at: "2026-03-13T10:00:00Z",
+          components: [
+            { name: "Actions", status: "degraded_performance" },
+            { name: "Pages", status: "some_new_status" },
+          ],
+        },
+      ],
+    });
+    const result = transformSummary(raw);
+    expect(result.incidents[0].components).toEqual([
+      { name: "Actions", status: "degraded_performance" },
+    ]);
+  });
 });
 
 describe("fetchGitHubStatus", () => {
@@ -176,5 +328,31 @@ describe("fetchGitHubStatus", () => {
 
     const result = await fetchGitHubStatus();
     expect(result).toEqual({ ok: false, reason: "api-error" });
+  });
+
+  it("returns parse-error when json() rejects", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.reject(new SyntaxError("Unexpected token <")),
+      }),
+    );
+
+    const result = await fetchGitHubStatus();
+    expect(result).toEqual({ ok: false, reason: "parse-error" });
+  });
+
+  it("fetches from the correct URL", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(makeSummaryResponse({})),
+    });
+    vi.stubGlobal("fetch", mockFetch);
+
+    await fetchGitHubStatus();
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://www.githubstatus.com/api/v2/summary.json",
+    );
   });
 });

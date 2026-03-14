@@ -28,12 +28,7 @@ export interface GitHubStatusData {
   incidents: StatusIncident[];
 }
 
-export interface StoredStatus {
-  data: GitHubStatusData;
-  timestamp: number;
-}
-
-export const statusStorage = storage.defineItem<StoredStatus | null>(
+export const statusStorage = storage.defineItem<GitHubStatusData | null>(
   "local:github-status",
   { fallback: null },
 );
@@ -52,6 +47,19 @@ export const collapsedStorage = storage.defineItem<boolean>(
   "local:github-status:collapsed",
   { fallback: false },
 );
+
+export function indicatorColor(indicator: StatusIndicator): string {
+  if (indicator === "critical") return "#da3633";
+  if (indicator === "major") return "#f0883e";
+  return "#d29922";
+}
+
+export function componentStatusColor(status: ComponentStatus): string {
+  if (status === "major_outage") return "#f85149";
+  if (status === "partial_outage") return "#e5534b";
+  if (status === "degraded_performance") return "#d4843e";
+  return "#ae7c14";
+}
 
 const VALID_INDICATORS = new Set<StatusIndicator>([
   "none",
