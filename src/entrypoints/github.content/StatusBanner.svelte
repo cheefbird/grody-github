@@ -1,38 +1,27 @@
 <script lang="ts">
   import type { GitHubStatusData, StatusIndicator } from "@/lib/github-status";
-  import { dismissedIncidentsStorage } from "@/lib/github-status";
+  import { collapsedStorage } from "@/lib/github-status";
   import StatusPopover from "./StatusPopover.svelte";
   import StatusStrip from "./StatusStrip.svelte";
 
-  let { statusData, dismissedIds: initialDismissedIds }: {
+  let { statusData, collapsed: initialCollapsed }: {
     statusData: GitHubStatusData | null;
-    dismissedIds: string[];
+    collapsed: boolean;
   } = $props();
 
-  let localDismissedIds = $state<string[]>([]);
-
-  $effect(() => {
-    localDismissedIds = Array.isArray(initialDismissedIds) ? initialDismissedIds : [];
-  });
-
-  let viewState = $state<"hidden" | "banner" | "strip">("hidden");
+  // svelte-ignore state_referenced_locally
+  let collapsed = $state(initialCollapsed);
   let popoverOpen = $state(false);
 
-  let dismissed = $derived(new Set(Array.isArray(localDismissedIds) ? localDismissedIds : []));
-
-  let activeIncidents = $derived(
-    statusData?.incidents.filter((i) => !dismissed.has(i.id)) ?? []
-  );
-
-  let hasAnyIncidents = $derived(
+  let hasIncidents = $derived(
     (statusData?.incidents.length ?? 0) > 0
   );
 
   const SEVERITY_ORDER: StatusIndicator[] = ["critical", "major", "minor", "none"];
   let severity = $derived.by<StatusIndicator>(() => {
-    if (!statusData || activeIncidents.length === 0) return "none";
+    if (!statusData || !hasIncidents) return "none";
     for (const level of SEVERITY_ORDER) {
-      if (activeIncidents.some((i) => i.impact === level)) return level;
+      if (statusData.incidents.some((i) => i.impact === level)) return level;
     }
     return statusData.indicator;
   });
@@ -54,36 +43,21 @@
     return `${names.slice(0, 3).join(", ")} +${names.length - 3} more`;
   });
 
-  let bannerColors = $derived.by(() => {
-    const s = severity;
-    if (s === "critical") return { bg: "#6e1b1b", border: "#da3633", text: "#f85149", icon: "#f85149" };
-    if (s === "major") return { bg: "#6e3a12", border: "#9a6700", text: "#f0883e", icon: "#f0883e" };
-    return { bg: "#5c4b1a", border: "#9a6700", text: "#d29922", icon: "#d29922" };
-  });
-
-  $effect(() => {
-    if (activeIncidents.length > 0 && viewState === "hidden") {
-      viewState = "banner";
-    } else if (!hasAnyIncidents) {
-      viewState = "hidden";
-      popoverOpen = false;
-    }
+  let accentColor = $derived.by(() => {
+    if (severity === "critical") return "#da3633";
+    if (severity === "major") return "#f0883e";
+    return "#d29922";
   });
 
   function handleCollapse() {
-    const ids = activeIncidents.map((i) => i.id);
-    const newDismissed = [...new Set([...localDismissedIds, ...ids])];
-    localDismissedIds = newDismissed;
-    viewState = "strip";
+    collapsed = true;
     popoverOpen = false;
-    dismissedIncidentsStorage.setValue(newDismissed);
+    collapsedStorage.setValue(true);
   }
 
   function handleExpand() {
-    const incidentIds = new Set(statusData?.incidents.map((i) => i.id) ?? []);
-    localDismissedIds = localDismissedIds.filter((id) => !incidentIds.has(id));
-    viewState = "banner";
-    dismissedIncidentsStorage.setValue(localDismissedIds);
+    collapsed = false;
+    collapsedStorage.setValue(false);
   }
 
   function handleTogglePopover() {
@@ -95,37 +69,41 @@
   }
 </script>
 
-{#if viewState === "banner"}
+{#if hasIncidents && !collapsed}
   <div
     role="status"
-    style="background:{bannerColors.bg};border-bottom:1px solid {bannerColors.border};padding:8px 16px;display:flex;align-items:center;gap:8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;position:relative;"
+    style="padding:0 0 8px;display:flex;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;position:relative;"
   >
-    <span style="color:{bannerColors.icon};">&#9888;</span>
-    <span style="color:{bannerColors.text};font-weight:500;">GitHub is experiencing issues</span>
-    {#if summaryText}
-      <span style="color:{bannerColors.text};opacity:0.8;">— {summaryText}</span>
-    {/if}
-    <span style="margin-left:auto;display:flex;gap:8px;">
+    <div style="display:flex;align-items:center;gap:12px;background:#161b22;border:1px solid #30363d;border-top:none;border-radius:0 0 8px 8px;padding:8px 16px;">
+    <div style="width:3px;height:32px;background:{accentColor};border-radius:2px;flex-shrink:0;"></div>
+    <span style="color:{accentColor};font-size:14px;flex-shrink:0;">&#9679;</span>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <span style="color:#e6edf3;font-weight:500;">GitHub incident — {summaryText}</span>
+      <span style="color:#8b949e;font-size:11px;">Investigating</span>
+    </div>
+    <span style="display:flex;gap:8px;align-items:center;flex-shrink:0;margin-left:12px;position:relative;">
       <button
         type="button"
         onclick={handleTogglePopover}
-        style="background:none;border:none;color:#8b949e;cursor:pointer;font-size:11px;padding:2px 6px;"
+        style="background:#21262d;color:#e6edf3;padding:3px 10px;border-radius:12px;font-size:11px;border:1px solid #30363d;cursor:pointer;"
         aria-expanded={popoverOpen}
       >Details</button>
       <button
         type="button"
         onclick={handleCollapse}
-        style="background:none;border:none;color:#8b949e;cursor:pointer;font-size:11px;padding:2px 6px;"
-      >Collapse</button>
+        style="background:none;border:none;color:#484f58;cursor:pointer;font-size:14px;padding:0;line-height:1;"
+        aria-label="Dismiss"
+      >&#x2715;</button>
+      {#if popoverOpen && statusData}
+        <StatusPopover
+          incidents={statusData.incidents}
+          onclose={handleClosePopover}
+        />
+      {/if}
     </span>
-    {#if popoverOpen && statusData}
-      <StatusPopover
-        incidents={statusData.incidents}
-        onclose={handleClosePopover}
-      />
-    {/if}
+    </div>
   </div>
-{:else if viewState === "strip"}
+{:else if hasIncidents && collapsed}
   <StatusStrip
     {severity}
     onexpand={handleExpand}

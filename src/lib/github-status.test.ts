@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  fetchGitHubStatus,
-  pruneDismissedIncidents,
-  transformSummary,
-} from "./github-status";
+import { fetchGitHubStatus, transformSummary } from "./github-status";
 
 function makeSummaryResponse(overrides: {
   indicator?: string;
@@ -180,28 +176,5 @@ describe("fetchGitHubStatus", () => {
 
     const result = await fetchGitHubStatus();
     expect(result).toEqual({ ok: false, reason: "api-error" });
-  });
-});
-
-describe("pruneDismissedIncidents", () => {
-  it("removes IDs not in the active incident list", () => {
-    const dismissed = ["inc1", "inc2", "inc3"];
-    const activeIds = ["inc2"];
-    expect(pruneDismissedIncidents(dismissed, activeIds)).toEqual(["inc2"]);
-  });
-
-  it("returns empty when no active incidents match", () => {
-    const dismissed = ["inc1", "inc2"];
-    const activeIds: string[] = [];
-    expect(pruneDismissedIncidents(dismissed, activeIds)).toEqual([]);
-  });
-
-  it("returns all dismissed when all are still active", () => {
-    const dismissed = ["inc1", "inc2"];
-    const activeIds = ["inc1", "inc2", "inc3"];
-    expect(pruneDismissedIncidents(dismissed, activeIds)).toEqual([
-      "inc1",
-      "inc2",
-    ]);
   });
 });

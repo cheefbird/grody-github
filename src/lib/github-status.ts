@@ -48,9 +48,9 @@ export const enabledStorage = storage.defineItem<boolean>(
   { fallback: true },
 );
 
-export const dismissedIncidentsStorage = storage.defineItem<string[]>(
-  "local:github-status:dismissed-incidents",
-  { fallback: [] },
+export const collapsedStorage = storage.defineItem<boolean>(
+  "local:github-status:collapsed",
+  { fallback: false },
 );
 
 const UNRESOLVED_STATUSES = new Set([
@@ -107,12 +107,4 @@ export async function fetchGitHubStatus(): Promise<FetchStatusResult> {
   } catch {
     return { ok: false, reason: "network-error" };
   }
-}
-
-export function pruneDismissedIncidents(
-  dismissed: string[],
-  activeIncidentIds: string[],
-): string[] {
-  const activeSet = new Set(activeIncidentIds);
-  return dismissed.filter((id) => activeSet.has(id));
 }

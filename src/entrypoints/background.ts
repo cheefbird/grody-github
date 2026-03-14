@@ -1,10 +1,9 @@
 import { getWorkflows } from "@/lib/github-api";
 import {
-  dismissedIncidentsStorage,
+  collapsedStorage,
   enabledStorage,
   fetchGitHubStatus,
   pollIntervalStorage,
-  pruneDismissedIncidents,
   statusStorage,
 } from "@/lib/github-status";
 import type { ExtensionMessage } from "@/lib/messages";
@@ -20,13 +19,8 @@ async function pollGitHubStatus() {
     timestamp: Date.now(),
   });
 
-  const dismissed = await dismissedIncidentsStorage.getValue();
-  if (dismissed.length > 0) {
-    const activeIds = result.data.incidents.map((i) => i.id);
-    const pruned = pruneDismissedIncidents(dismissed, activeIds);
-    if (pruned.length !== dismissed.length) {
-      await dismissedIncidentsStorage.setValue(pruned);
-    }
+  if (result.data.incidents.length === 0) {
+    await collapsedStorage.setValue(false);
   }
 }
 

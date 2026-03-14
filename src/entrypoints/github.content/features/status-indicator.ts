@@ -1,7 +1,7 @@
 import { mount, unmount } from "svelte";
 import type { ContentScriptContext } from "#imports";
 import {
-  dismissedIncidentsStorage,
+  collapsedStorage,
   enabledStorage,
   type GitHubStatusData,
   statusStorage,
@@ -26,32 +26,29 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
   header.after(container);
 
   const stored = await statusStorage.getValue();
-  const dismissed = (await dismissedIncidentsStorage.getValue()) ?? [];
+  const collapsed = (await collapsedStorage.getValue()) ?? false;
 
   let currentApp: ReturnType<typeof mount> | null = mount(StatusBanner, {
     target: container,
     props: {
       statusData: stored?.data ?? null,
-      dismissedIds: dismissed,
+      collapsed,
     },
   });
 
-  function remount(
-    statusData: GitHubStatusData | null,
-    dismissedIds: string[],
-  ) {
+  function remount(statusData: GitHubStatusData | null, collapsed: boolean) {
     if (currentApp) {
       unmount(currentApp);
     }
     currentApp = mount(StatusBanner, {
       target: container,
-      props: { statusData, dismissedIds },
+      props: { statusData, collapsed },
     });
   }
 
   const unwatchStatus = statusStorage.watch(async (newValue) => {
-    const ids = await dismissedIncidentsStorage.getValue();
-    remount(newValue?.data ?? null, ids);
+    const collapsed = (await collapsedStorage.getValue()) ?? false;
+    remount(newValue?.data ?? null, collapsed);
   });
 
   ctx.onInvalidated(() => {
