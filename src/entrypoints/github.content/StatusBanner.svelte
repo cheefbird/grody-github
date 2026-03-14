@@ -70,42 +70,115 @@
 </script>
 
 {#if hasIncidents && !collapsed}
-  <div
-    role="status"
-    style="padding:0 0 8px;display:flex;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;position:relative;"
-  >
-    <div style="display:flex;align-items:center;gap:12px;background:#161b22;border:1px solid #30363d;border-top:none;border-radius:0 0 8px 8px;padding:8px 16px;">
-    <div style="width:3px;height:32px;background:{accentColor};border-radius:2px;flex-shrink:0;"></div>
-    <span style="color:{accentColor};font-size:14px;flex-shrink:0;">&#9679;</span>
-    <div style="display:flex;flex-direction:column;gap:2px;">
-      <span style="color:#e6edf3;font-weight:500;">GitHub incident — {summaryText}</span>
-      <span style="color:#8b949e;font-size:11px;">Investigating</span>
-    </div>
-    <span style="display:flex;gap:8px;align-items:center;flex-shrink:0;margin-left:12px;position:relative;">
-      <button
-        type="button"
-        onclick={handleTogglePopover}
-        style="background:#21262d;color:#e6edf3;padding:3px 10px;border-radius:12px;font-size:11px;border:1px solid #30363d;cursor:pointer;"
-        aria-expanded={popoverOpen}
-      >Details</button>
-      <button
-        type="button"
-        onclick={handleCollapse}
-        style="background:none;border:none;color:#484f58;cursor:pointer;font-size:14px;padding:0;line-height:1;"
-        aria-label="Dismiss"
-      >&#x2715;</button>
-      {#if popoverOpen && statusData}
-        <StatusPopover
-          incidents={statusData.incidents}
-          onclose={handleClosePopover}
-        />
-      {/if}
-    </span>
+  <div class="banner-root" role="status">
+    <div class="drawer-card">
+      <div class="accent-bar" style:background={accentColor}></div>
+      <span class="severity-dot" style:color={accentColor}>&#9679;</span>
+      <div class="info">
+        <span class="title">GitHub incident — {summaryText}</span>
+        <span class="subtitle">Investigating</span>
+      </div>
+      <span class="actions">
+        <button
+          type="button"
+          class="details-btn"
+          onclick={handleTogglePopover}
+          aria-expanded={popoverOpen}
+        >Details</button>
+        <button
+          type="button"
+          class="dismiss-btn"
+          onclick={handleCollapse}
+          aria-label="Dismiss"
+        >&#x2715;</button>
+        {#if popoverOpen && statusData}
+          <StatusPopover
+            incidents={statusData.incidents}
+            onclose={handleClosePopover}
+          />
+        {/if}
+      </span>
     </div>
   </div>
 {:else if hasIncidents && collapsed}
-  <StatusStrip
-    {severity}
-    onexpand={handleExpand}
-  />
+  <StatusStrip {severity} onexpand={handleExpand} />
 {/if}
+
+<style>
+  .banner-root {
+    display: flex;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .drawer-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 8px 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .accent-bar {
+    width: 3px;
+    height: 32px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .severity-dot {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .title {
+    color: #e6edf3;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .subtitle {
+    color: #8b949e;
+    font-size: 11px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    position: relative;
+  }
+
+  .details-btn {
+    background: #21262d;
+    color: #e6edf3;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    border: 1px solid #30363d;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .dismiss-btn {
+    background: none;
+    border: none;
+    color: #484f58;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
+  }
+</style>

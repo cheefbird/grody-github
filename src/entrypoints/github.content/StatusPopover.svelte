@@ -61,33 +61,93 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div
-  bind:this={popoverEl}
-  tabindex="0"
-  style="position:absolute;top:100%;left:0;max-width:360px;width:90vw;background:#161b22;border:1px solid #30363d;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px 16px;z-index:100;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;color:#e6edf3;margin-top:4px;"
->
+<div class="popover" bind:this={popoverEl} tabindex="0">
   {#each incidents as incident, i}
     {#if i > 0}
-      <hr style="border:none;border-top:1px solid #30363d;margin:10px 0;" />
+      <hr class="divider" />
     {/if}
-    <div style="font-weight:600;margin-bottom:4px;">{incident.name}</div>
-    <div style="color:#8b949e;margin-bottom:8px;">
+    <div class="incident-name">{incident.name}</div>
+    <div class="incident-meta">
       {statusLabel(incident.status)} &middot; {timeSince(incident.started_at)}
     </div>
     {#each incident.components as component}
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-        <span style="width:8px;height:8px;border-radius:50%;background:{statusColor(component.status)};display:inline-block;flex-shrink:0;"></span>
+      <div class="component-row">
+        <span class="component-dot" style:background={statusColor(component.status)}></span>
         <span>{component.name}</span>
-        <span style="margin-left:auto;color:{statusColor(component.status)};">{statusLabel(component.status)}</span>
+        <span class="component-status" style:color={statusColor(component.status)}>
+          {statusLabel(component.status)}
+        </span>
       </div>
     {/each}
-    <div style="margin-top:8px;">
-      <a
-        href={incident.shortlink}
-        target="_blank"
-        rel="noopener noreferrer"
-        style="color:#58a6ff;text-decoration:none;font-size:11px;"
-      >View on githubstatus.com &rarr;</a>
+    <div class="incident-link">
+      <a href={incident.shortlink} target="_blank" rel="noopener noreferrer">
+        View on githubstatus.com &rarr;
+      </a>
     </div>
   {/each}
 </div>
+
+<style>
+  .popover {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    max-width: 360px;
+    width: 90vw;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 12px 16px;
+    z-index: 100;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 12px;
+    color: #e6edf3;
+    margin-top: 4px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #30363d;
+    margin: 10px 0;
+  }
+
+  .incident-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .incident-meta {
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+
+  .component-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .component-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .component-status {
+    margin-left: auto;
+  }
+
+  .incident-link {
+    margin-top: 8px;
+  }
+
+  .incident-link a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 11px;
+  }
+</style>

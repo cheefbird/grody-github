@@ -6,22 +6,52 @@
     onexpand: () => void;
   } = $props();
 
-  let color = $derived.by(() => {
-    if (severity === "critical") return "#6e1b1b";
-    if (severity === "major") return "#6e3a12";
-    return "#5c4b1a";
+  let accentColor = $derived.by(() => {
+    if (severity === "critical") return "#da3633";
+    if (severity === "major") return "#f0883e";
+    return "#d29922";
   });
 </script>
 
-<div role="status" aria-label="GitHub incident active — click to expand">
-  <button
-    type="button"
-    onclick={onexpand}
-    style="display:block;width:100%;height:3px;background:{color};border:none;cursor:pointer;padding:0;position:relative;"
-    aria-label="Expand status banner"
-  >
-    <span
-      style="position:absolute;left:50%;transform:translateX(-50%);top:-1px;background:{color};color:white;font-size:9px;padding:1px 8px;border-radius:0 0 4px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;white-space:nowrap;"
-    >&#9660; Incident</span>
+<div class="strip" role="status" aria-label="GitHub incident active — click to expand">
+  <button type="button" class="pill" onclick={onexpand} aria-label="Expand status banner">
+    <span class="dot" style:color={accentColor}>&#9679;</span>
+    <span class="pill-text">Incident</span>
+    <svg aria-hidden="true" class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#484f58" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
   </button>
 </div>
+
+<style>
+  .strip {
+    display: flex;
+    justify-content: center;
+    padding: 0 0 6px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .dot {
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .pill-text {
+    color: #8b949e;
+    font-size: 11px;
+  }
+
+  .chevron {
+    display: block;
+  }
+</style>
