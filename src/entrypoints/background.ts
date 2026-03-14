@@ -20,7 +20,6 @@ async function pollGitHubStatus() {
     timestamp: Date.now(),
   });
 
-  // Prune dismissed incidents that have resolved
   const dismissed = await dismissedIncidentsStorage.getValue();
   if (dismissed.length > 0) {
     const activeIds = result.data.incidents.map((i) => i.id);
@@ -45,7 +44,6 @@ async function stopPolling() {
 }
 
 export default defineBackground(() => {
-  // Existing: workflow message handler
   browser.runtime.onMessage.addListener(
     (message: ExtensionMessage, _sender, sendResponse) => {
       if (message.type === "GET_WORKFLOWS") {
@@ -55,14 +53,12 @@ export default defineBackground(() => {
     },
   );
 
-  // Status polling: alarm handler
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === ALARM_NAME) {
       pollGitHubStatus();
     }
   });
 
-  // React to settings changes
   enabledStorage.watch((enabled) => {
     if (enabled) {
       startPolling();
@@ -78,6 +74,5 @@ export default defineBackground(() => {
     await browser.alarms.create(ALARM_NAME, { periodInMinutes: interval });
   });
 
-  // Initial poll on activation
   startPolling();
 });

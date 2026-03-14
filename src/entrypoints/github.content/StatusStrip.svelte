@@ -7,9 +7,9 @@
   } = $props();
 
   let color = $derived.by(() => {
-    if (severity === "critical") return "#da3633";
-    if (severity === "major") return "#f0883e";
-    return "#d29922";
+    if (severity === "critical") return "#6e1b1b";
+    if (severity === "major") return "#6e3a12";
+    return "#5c4b1a";
   });
 </script>
 
@@ -21,7 +21,7 @@
     aria-label="Expand status banner"
   >
     <span
-      style="position:absolute;right:16px;top:-1px;background:{color};color:white;font-size:9px;padding:1px 6px;border-radius:0 0 4px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"
-    >&#9660;</span>
+      style="position:absolute;left:50%;transform:translateX(-50%);top:-1px;background:{color};color:white;font-size:9px;padding:1px 8px;border-radius:0 0 4px 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;white-space:nowrap;"
+    >&#9660; Incident</span>
   </button>
 </div>

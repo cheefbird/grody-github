@@ -4,21 +4,28 @@
   import StatusStrip from "./StatusStrip.svelte";
   import StatusPopover from "./StatusPopover.svelte";
 
-  let { statusData, dismissedIds }: {
+  let { statusData, dismissedIds: initialDismissedIds }: {
     statusData: GitHubStatusData | null;
     dismissedIds: string[];
   } = $props();
 
-  // State machine: "hidden" | "banner" | "strip"
+  let localDismissedIds = $state<string[]>([]);
+
+  $effect(() => {
+    localDismissedIds = initialDismissedIds;
+  });
+
   let viewState = $state<"hidden" | "banner" | "strip">("hidden");
   let popoverOpen = $state(false);
 
-  // Compute undismissed incidents
   let activeIncidents = $derived(
-    statusData?.incidents.filter((i) => !dismissedIds.includes(i.id)) ?? []
+    statusData?.incidents.filter((i) => !localDismissedIds.includes(i.id)) ?? []
   );
 
-  // Highest severity among active incidents
+  let hasAnyIncidents = $derived(
+    (statusData?.incidents.length ?? 0) > 0
+  );
+
   const SEVERITY_ORDER: StatusIndicator[] = ["critical", "major", "minor", "none"];
   let severity = $derived.by<StatusIndicator>(() => {
     if (!statusData || activeIncidents.length === 0) return "none";
@@ -28,7 +35,6 @@
     return statusData.indicator;
   });
 
-  // All affected component names across incidents (deduped)
   let affectedNames = $derived.by(() => {
     const names = new Set<string>();
     for (const incident of (statusData?.incidents ?? [])) {
@@ -46,7 +52,6 @@
     return `${names.slice(0, 3).join(", ")} +${names.length - 3} more`;
   });
 
-  // Color mapping
   let bannerColors = $derived.by(() => {
     const s = severity;
     if (s === "critical") return { bg: "#6e1b1b", border: "#da3633", text: "#f85149", icon: "#f85149" };
@@ -54,13 +59,10 @@
     return { bg: "#5c4b1a", border: "#9a6700", text: "#d29922", icon: "#d29922" };
   });
 
-  // State machine transitions driven by data changes
   $effect(() => {
-    if (activeIncidents.length > 0 && viewState !== "banner") {
-      // hidden → banner: new incident detected
-      // strip → banner: new undismissed incident arrived while collapsed
+    if (activeIncidents.length > 0 && viewState === "hidden") {
       viewState = "banner";
-    } else if (activeIncidents.length === 0) {
+    } else if (!hasAnyIncidents) {
       viewState = "hidden";
       popoverOpen = false;
     }
@@ -68,13 +70,18 @@
 
   function handleCollapse() {
     const ids = activeIncidents.map((i) => i.id);
-    dismissedIncidentsStorage.setValue([...new Set([...dismissedIds, ...ids])]);
+    const newDismissed = [...new Set([...localDismissedIds, ...ids])];
+    localDismissedIds = newDismissed;
     viewState = "strip";
     popoverOpen = false;
+    dismissedIncidentsStorage.setValue(newDismissed);
   }
 
   function handleExpand() {
+    const incidentIds = new Set(statusData?.incidents.map((i) => i.id) ?? []);
+    localDismissedIds = localDismissedIds.filter((id) => !incidentIds.has(id));
     viewState = "banner";
+    dismissedIncidentsStorage.setValue(localDismissedIds);
   }
 
   function handleTogglePopover() {

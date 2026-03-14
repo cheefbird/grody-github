@@ -7,6 +7,7 @@ let token = $state("");
 let status = $state<"idle" | "saving" | "success" | "error">("idle");
 let statusMessage = $state("");
 let loaded = $state(false);
+let showTokenHelp = $state(false);
 let connected = $derived(loaded && token.trim().length > 0);
 let statusEnabled = $state(true);
 let pollInterval = $state(15);
@@ -112,24 +113,29 @@ async function handleSave() {
   <label for="pat">GitHub Personal Access Token (optional)</label>
   <p>
     Add a token to avoid rate limits or filter workflows in private repos.
+    <button type="button" class="link-btn" onclick={() => showTokenHelp = !showTokenHelp}>
+      {showTokenHelp ? "Hide details" : "Learn more"}
+    </button>
   </p>
-  <ul class="scope-list">
-    <li>
-      <strong>Fine-grained token</strong>: grant <strong>Actions (read)</strong> on the repos you need. No permissions needed for public repos.
-    </li>
-    <li>
-      <strong>Classic token</strong>: <code>repo</code> scope for private repos. No scopes needed for public repos.</li>
-  </ul>
-  <p class="hint">
-    Your token is kept in local browser storage and is only ever sent to
-    api.github.com. For best security, use a
-    <a
-      href="https://github.com/settings/personal-access-tokens/new"
-      target="_blank"
-      rel="noopener noreferrer">fine-grained personal access token</a
-    >
-    scoped to just the repos you need.
-  </p>
+  {#if showTokenHelp}
+    <ul class="scope-list">
+      <li>
+        <strong>Fine-grained token</strong>: grant <strong>Actions (read)</strong> on the repos you need. No permissions needed for public repos.
+      </li>
+      <li>
+        <strong>Classic token</strong>: <code>repo</code> scope for private repos. No scopes needed for public repos.</li>
+    </ul>
+    <p class="hint">
+      Your token is kept in local browser storage and is only ever sent to
+      api.github.com. For best security, use a
+      <a
+        href="https://github.com/settings/personal-access-tokens/new"
+        target="_blank"
+        rel="noopener noreferrer">fine-grained personal access token</a
+      >
+      scoped to just the repos you need.
+    </p>
+  {/if}
   <form
     onsubmit={(e) => {
       e.preventDefault();
@@ -193,7 +199,7 @@ async function handleSave() {
     line-height: 1.5;
     color-scheme: light dark;
     color: light-dark(#24292f, #e6edf3);
-    background: light-dark(#ffffff, #0d1117);
+    background: transparent;
   }
   h1 {
     font-size: 1.15rem;
@@ -274,5 +280,17 @@ async function handleSave() {
   select:disabled {
     opacity: 0.6;
     cursor: default;
+  }
+  .link-btn {
+    background: none;
+    border: none;
+    color: light-dark(#0969da, #58a6ff);
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    font-weight: 400;
+  }
+  .link-btn:hover {
+    text-decoration: underline;
   }
 </style>

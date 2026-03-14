@@ -8,13 +8,11 @@ import {
   type GitHubStatusData,
 } from "@/lib/github-status";
 
-const HEADER_SELECTOR = "header.AppHeader";
-const HEADER_FALLBACK_SELECTOR = "div.Header";
-
 function findHeader(): HTMLElement | null {
   return (
-    document.querySelector<HTMLElement>(HEADER_SELECTOR) ??
-    document.querySelector<HTMLElement>(HEADER_FALLBACK_SELECTOR)
+    document.querySelector<HTMLElement>("header.AppHeader") ??
+    document.querySelector<HTMLElement>("header[class*='appHeader']") ??
+    document.querySelector<HTMLElement>("div.Header")
   );
 }
 
@@ -58,16 +56,8 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
     remount(newValue?.data ?? null, ids);
   });
 
-  const unwatchDismissed = dismissedIncidentsStorage.watch(
-    async (newDismissed) => {
-      const current = await statusStorage.getValue();
-      remount(current?.data ?? null, newDismissed);
-    },
-  );
-
   ctx.onInvalidated(() => {
     unwatchStatus();
-    unwatchDismissed();
     if (currentApp) {
       unmount(currentApp);
       currentApp = null;

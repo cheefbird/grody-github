@@ -1,5 +1,3 @@
-// src/lib/github-status.ts
-
 export type StatusIndicator = "none" | "minor" | "major" | "critical";
 
 export type IncidentStatus = "investigating" | "identified" | "monitoring";
