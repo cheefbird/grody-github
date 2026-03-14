@@ -9,6 +9,13 @@ import {
 import type { ExtensionMessage } from "@/lib/messages";
 
 const ALARM_NAME = "github-status-poll";
+const DEFAULT_POLL_MINUTES = 15;
+
+function sanitizeInterval(value: unknown): number {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num < 1) return DEFAULT_POLL_MINUTES;
+  return num;
+}
 
 async function pollGitHubStatus() {
   const result = await fetchGitHubStatus();
@@ -28,7 +35,7 @@ async function startPolling() {
   const enabled = await enabledStorage.getValue();
   if (!enabled) return;
 
-  const interval = await pollIntervalStorage.getValue();
+  const interval = sanitizeInterval(await pollIntervalStorage.getValue());
   await browser.alarms.create(ALARM_NAME, { periodInMinutes: interval });
   await pollGitHubStatus();
 }
@@ -66,7 +73,9 @@ export default defineBackground(() => {
       const enabled = await enabledStorage.getValue();
       if (!enabled) return;
       await browser.alarms.clear(ALARM_NAME);
-      await browser.alarms.create(ALARM_NAME, { periodInMinutes: interval });
+      await browser.alarms.create(ALARM_NAME, {
+        periodInMinutes: sanitizeInterval(interval),
+      });
     } catch {}
   });
 

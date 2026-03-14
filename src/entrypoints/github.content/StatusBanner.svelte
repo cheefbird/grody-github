@@ -67,12 +67,16 @@
   function handleCollapse() {
     collapsed = true;
     popoverOpen = false;
-    collapsedStorage.setValue(true);
+    collapsedStorage.setValue(true).catch(() => {
+      collapsed = false;
+    });
   }
 
   function handleExpand() {
     collapsed = false;
-    collapsedStorage.setValue(false);
+    collapsedStorage.setValue(false).catch(() => {
+      collapsed = true;
+    });
   }
 
   function handleTogglePopover() {

@@ -53,10 +53,24 @@ export const collapsedStorage = storage.defineItem<boolean>(
   { fallback: false },
 );
 
-const UNRESOLVED_STATUSES = new Set([
+const VALID_INDICATORS = new Set<StatusIndicator>([
+  "none",
+  "minor",
+  "major",
+  "critical",
+]);
+
+const VALID_INCIDENT_STATUSES = new Set<IncidentStatus>([
   "investigating",
   "identified",
   "monitoring",
+]);
+
+const VALID_COMPONENT_STATUSES = new Set<ComponentStatus>([
+  "degraded_performance",
+  "partial_outage",
+  "major_outage",
+  "under_maintenance",
 ]);
 
 // biome-ignore lint/suspicious/noExplicitAny: raw API response shape validated by transform
@@ -64,10 +78,14 @@ export function transformSummary(raw: any): GitHubStatusData {
   const incidents: StatusIncident[] = [];
 
   for (const incident of raw.incidents ?? []) {
-    if (!UNRESOLVED_STATUSES.has(incident.status)) continue;
+    if (!VALID_INCIDENT_STATUSES.has(incident.status)) continue;
 
     const components: StatusComponent[] = (incident.components ?? [])
-      .filter((c: { status: string }) => c.status !== "operational")
+      .filter(
+        (c: { status: string }) =>
+          c.status !== "operational" &&
+          VALID_COMPONENT_STATUSES.has(c.status as ComponentStatus),
+      )
       .map((c: { name: string; status: string }) => ({
         name: c.name,
         status: c.status as ComponentStatus,
@@ -77,17 +95,18 @@ export function transformSummary(raw: any): GitHubStatusData {
       id: incident.id,
       name: incident.name,
       status: incident.status as IncidentStatus,
-      impact: incident.impact as StatusIndicator,
-      shortlink: incident.shortlink,
-      started_at: incident.started_at,
+      impact: VALID_INDICATORS.has(incident.impact) ? incident.impact : "none",
+      shortlink: incident.shortlink ?? "",
+      started_at: incident.started_at ?? "",
       components,
     });
   }
 
-  return {
-    indicator: raw.status?.indicator ?? "none",
-    incidents,
-  };
+  const indicator = VALID_INDICATORS.has(raw.status?.indicator)
+    ? raw.status.indicator
+    : "none";
+
+  return { indicator, incidents };
 }
 
 const STATUS_API_URL = "https://www.githubstatus.com/api/v2/summary.json";

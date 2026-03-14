@@ -32,6 +32,8 @@ onMount(async () => {
     pollInterval = await pollIntervalStorage.getValue();
   } catch (err) {
     console.error("[grody-github] Failed to load status settings:", err);
+    status = "error";
+    statusMessage = "Failed to load status settings. Defaults shown.";
   }
   loaded = true;
 });
@@ -48,13 +50,22 @@ async function validateToken(pat: string): Promise<boolean> {
 
 async function handleStatusToggle() {
   statusEnabled = !statusEnabled;
-  await enabledStorage.setValue(statusEnabled);
+  try {
+    await enabledStorage.setValue(statusEnabled);
+  } catch {
+    statusEnabled = !statusEnabled;
+  }
 }
 
 async function handleIntervalChange(event: Event) {
+  const prev = pollInterval;
   const value = Number((event.target as HTMLSelectElement).value);
   pollInterval = value;
-  await pollIntervalStorage.setValue(value);
+  try {
+    await pollIntervalStorage.setValue(value);
+  } catch {
+    pollInterval = prev;
+  }
 }
 
 async function handleSave() {
