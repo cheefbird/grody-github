@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { StatusIncident } from "@/lib/github-status";
   import { onMount } from "svelte";
+  import type { StatusIncident } from "@/lib/github-status";
 
   let { incidents, onclose }: {
     incidents: StatusIncident[];
