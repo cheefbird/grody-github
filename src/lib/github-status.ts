@@ -20,6 +20,7 @@ export interface StatusIncident {
   impact: StatusIndicator;
   shortlink: string;
   started_at: string;
+  updated_at: string;
   components: StatusComponent[];
 }
 
@@ -52,6 +53,25 @@ export function indicatorColor(indicator: StatusIndicator): string {
   if (indicator === "critical") return "#da3633";
   if (indicator === "major") return "#f0883e";
   return "#d29922";
+}
+
+const TIME_UNITS = [
+  { ceiling: 60, divisor: 1, suffix: "m" },
+  { ceiling: 1_440, divisor: 60, suffix: "h" },
+  { ceiling: Infinity, divisor: 1_440, suffix: "d" },
+] as const;
+
+export function timeSince(timestamp: string): string {
+  const ms = Date.now() - new Date(timestamp).getTime();
+  if (!Number.isFinite(ms) || ms < 60_000) return "just now";
+
+  const totalMinutes = Math.floor(ms / 60_000);
+  for (const { ceiling, divisor, suffix } of TIME_UNITS) {
+    if (totalMinutes < ceiling) {
+      return `${Math.floor(totalMinutes / divisor)}${suffix} ago`;
+    }
+  }
+  return "just now";
 }
 
 export function componentStatusColor(status: ComponentStatus): string {
@@ -106,6 +126,7 @@ export function transformSummary(raw: any): GitHubStatusData {
       impact: VALID_INDICATORS.has(incident.impact) ? incident.impact : "none",
       shortlink: incident.shortlink ?? "",
       started_at: incident.started_at ?? "",
+      updated_at: incident.updated_at ?? "",
       components,
     });
   }

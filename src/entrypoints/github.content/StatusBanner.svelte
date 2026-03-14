@@ -3,6 +3,7 @@ import {
   type GitHubStatusData,
   indicatorColor,
   type StatusIndicator,
+  timeSince,
 } from "@/lib/github-status";
 import StatusPopover from "./StatusPopover.svelte";
 import StatusStrip from "./StatusStrip.svelte";
@@ -60,13 +61,22 @@ const STATUS_LABELS: Record<string, string> = {
   monitoring: "Monitoring",
 };
 
-let statusLabel = $derived.by(() => {
-  if (!statusData || !hasIncidents) return "";
+let { statusLabel, startedTime } = $derived.by(() => {
+  if (!statusData || !hasIncidents) return { statusLabel: "", startedTime: "" };
   for (const level of SEVERITY_ORDER) {
     const match = statusData.incidents.find((i) => i.impact === level);
-    if (match) return STATUS_LABELS[match.status] ?? match.status;
+    if (match) {
+      return {
+        statusLabel: STATUS_LABELS[match.status] ?? match.status,
+        startedTime: match.started_at ? timeSince(match.started_at) : "",
+      };
+    }
   }
-  return statusData.incidents[0]?.status ?? "";
+  const fallback = statusData.incidents[0];
+  return {
+    statusLabel: fallback?.status ?? "",
+    startedTime: fallback?.started_at ? timeSince(fallback.started_at) : "",
+  };
 });
 
 let accentColor = $derived(indicatorColor(severity));
@@ -96,7 +106,12 @@ function handleClosePopover() {
       <span class="severity-dot" style:color={accentColor}>&#9679;</span>
       <div class="info">
         <span class="title">GitHub incident — {summaryText}</span>
-        <span class="subtitle">{statusLabel}</span>
+        <span class="subtitle"
+          >{statusLabel}
+          {#if startedTime}
+            &middot; Started {startedTime}
+          {/if}</span
+        >
       </div>
       <span class="actions">
         <button
@@ -139,12 +154,12 @@ function handleClosePopover() {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bgColor-inset, #161b22);
+  border: 1px solid var(--borderColor-default, #30363d);
   border-top: none;
   border-radius: 0 0 8px 8px;
   padding: 8px 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-floating-small, 0 4px 12px rgba(0, 0, 0, 0.4));
 }
 
 .accent-bar {
@@ -166,13 +181,13 @@ function handleClosePopover() {
 }
 
 .title {
-  color: #e6edf3;
+  color: var(--fgColor-default, #e6edf3);
   font-weight: 500;
   white-space: nowrap;
 }
 
 .subtitle {
-  color: #8b949e;
+  color: var(--fgColor-muted, #8b949e);
   font-size: 11px;
 }
 
@@ -186,12 +201,12 @@ function handleClosePopover() {
 }
 
 .details-btn {
-  background: #21262d;
-  color: #e6edf3;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  border: 1px solid #30363d;
+  background: var(--button-default-bgColor-rest, #21262d);
+  color: var(--button-default-fgColor-rest, #e6edf3);
+  padding: 3px var(--control-small-paddingInline-condensed, 0.5rem);
+  border-radius: var(--borderRadius-medium, 0.375rem);
+  font-size: 12px;
+  border: 1px solid var(--button-default-borderColor-rest, #30363d);
   cursor: pointer;
   font-family: inherit;
 }
@@ -199,7 +214,7 @@ function handleClosePopover() {
 .dismiss-btn {
   background: none;
   border: none;
-  color: #484f58;
+  color: var(--fgColor-muted, #8b949e);
   cursor: pointer;
   font-size: 14px;
   padding: 0;

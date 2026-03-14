@@ -10,6 +10,7 @@ function makeSummaryResponse(overrides: {
     impact: string;
     shortlink: string;
     started_at: string;
+    updated_at?: string;
     components: Array<{ name: string; status: string }>;
   }>;
 }) {
@@ -303,6 +304,7 @@ describe("fetchGitHubStatus", () => {
             impact: "minor",
             shortlink: "https://stspg.io/inc1",
             started_at: "2026-03-13T10:00:00Z",
+            updated_at: "",
             components: [{ name: "Actions", status: "partial_outage" }],
           },
         ],

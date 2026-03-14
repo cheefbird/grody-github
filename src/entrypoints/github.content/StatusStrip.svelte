@@ -32,7 +32,7 @@ let accentColor = $derived(indicatorColor(severity));
       height="12"
       viewBox="0 0 12 12"
       fill="none"
-      stroke="#484f58"
+      stroke="currentColor"
       stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
@@ -53,8 +53,8 @@ let accentColor = $derived(indicatorColor(severity));
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bgColor-inset, #161b22);
+  border: 1px solid var(--borderColor-default, #30363d);
   border-top: none;
   border-radius: 0 0 6px 6px;
   padding: 3px 10px;
@@ -68,11 +68,12 @@ let accentColor = $derived(indicatorColor(severity));
 }
 
 .pill-text {
-  color: #8b949e;
+  color: var(--fgColor-muted, #8b949e);
   font-size: 11px;
 }
 
 .chevron {
   display: block;
+  color: var(--fgColor-muted, #8b949e);
 }
 </style>

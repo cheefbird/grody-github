@@ -1,6 +1,10 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import { componentStatusColor, type StatusIncident } from "@/lib/github-status";
+import {
+  componentStatusColor,
+  type StatusIncident,
+  timeSince,
+} from "@/lib/github-status";
 
 let {
   incidents,
@@ -17,16 +21,6 @@ function statusLabel(status: string): string {
     .split("_")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
-}
-
-function timeSince(startedAt: string): string {
-  const ms = Date.now() - new Date(startedAt).getTime();
-  if (!Number.isFinite(ms) || ms < 0) return "just now";
-  const minutes = Math.floor(ms / 60_000);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -65,7 +59,8 @@ onMount(() => {
     <div class="incident-name">{incident.name}</div>
     <div class="incident-meta">
       {statusLabel(incident.status)}
-      &middot; {timeSince(incident.started_at)}
+      &middot;
+      {incident.updated_at ? `Updated ${timeSince(incident.updated_at)}` : timeSince(incident.started_at)}
     </div>
     {#each incident.components as component}
       <div class="component-row">
@@ -97,21 +92,21 @@ onMount(() => {
   right: 0;
   max-width: 360px;
   width: 90vw;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--bgColor-inset, #161b22);
+  border: 1px solid var(--borderColor-default, #30363d);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-floating-large, 0 8px 24px rgba(0, 0, 0, 0.5));
   padding: 12px 16px;
   z-index: 100;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 12px;
-  color: #e6edf3;
+  color: var(--fgColor-default, #e6edf3);
   margin-top: 4px;
 }
 
 .divider {
   border: none;
-  border-top: 1px solid #30363d;
+  border-top: 1px solid var(--borderColor-default, #30363d);
   margin: 10px 0;
 }
 
@@ -121,7 +116,7 @@ onMount(() => {
 }
 
 .incident-meta {
-  color: #8b949e;
+  color: var(--fgColor-muted, #8b949e);
   margin-bottom: 8px;
 }
 
@@ -149,7 +144,7 @@ onMount(() => {
 }
 
 .incident-link a {
-  color: #58a6ff;
+  color: var(--fgColor-accent, #58a6ff);
   text-decoration: none;
   font-size: 11px;
 }
