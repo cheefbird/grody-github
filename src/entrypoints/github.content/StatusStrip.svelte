@@ -1,21 +1,29 @@
 <script lang="ts">
-import { indicatorColor, type StatusIndicator } from "@/lib/github-status";
+import {
+  indicatorColor,
+  RESOLVED_COLOR,
+  type StatusIndicator,
+} from "@/lib/github-status";
 
 let {
   severity,
+  resolved = false,
   onexpand,
 }: {
   severity: StatusIndicator;
+  resolved?: boolean;
   onexpand: () => void;
 } = $props();
 
-let accentColor = $derived(indicatorColor(severity));
+let accentColor = $derived(
+  resolved ? RESOLVED_COLOR : indicatorColor(severity),
+);
 </script>
 
 <div
   class="strip"
   role="status"
-  aria-label="GitHub incident active — click to expand"
+  aria-label={resolved ? "GitHub incident resolved — click to expand" : "GitHub incident active — click to expand"}
 >
   <button
     type="button"
@@ -24,7 +32,7 @@ let accentColor = $derived(indicatorColor(severity));
     aria-label="Expand status banner"
   >
     <span class="dot" style:color={accentColor}>&#9679;</span>
-    <span class="pill-text">Incident</span>
+    <span class="pill-text">{resolved ? "Resolved" : "Incident"}</span>
     <svg
       aria-hidden="true"
       class="chevron"

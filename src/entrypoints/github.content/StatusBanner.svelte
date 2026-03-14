@@ -2,6 +2,7 @@
 import {
   type GitHubStatusData,
   indicatorColor,
+  RESOLVED_COLOR,
   type StatusIndicator,
   timeSince,
 } from "@/lib/github-status";
@@ -30,10 +31,14 @@ const SEVERITY_ORDER: StatusIndicator[] = [
   "minor",
   "none",
 ];
+// Returns "none" when only resolved incidents remain.
+// The UI handles this via isResolved + RESOLVED_COLOR overrides.
 let severity = $derived.by<StatusIndicator>(() => {
   if (!statusData || !hasIncidents) return "none";
+  const active = statusData.incidents.filter((i) => i.status !== "resolved");
+  if (active.length === 0) return "none";
   for (const level of SEVERITY_ORDER) {
-    if (statusData.incidents.some((i) => i.impact === level)) return level;
+    if (active.some((i) => i.impact === level)) return level;
   }
   return statusData.indicator;
 });
@@ -41,6 +46,7 @@ let severity = $derived.by<StatusIndicator>(() => {
 let affectedNames = $derived.by(() => {
   const names = new Set<string>();
   for (const incident of statusData?.incidents ?? []) {
+    if (incident.status === "resolved") continue;
     for (const c of incident.components) {
       names.add(c.name);
     }
@@ -59,27 +65,50 @@ const STATUS_LABELS: Record<string, string> = {
   investigating: "Investigating",
   identified: "Identified",
   monitoring: "Monitoring",
+  resolved: "Resolved",
 };
 
-let { statusLabel, startedTime } = $derived.by(() => {
-  if (!statusData || !hasIncidents) return { statusLabel: "", startedTime: "" };
+let { statusLabel, startedTime, isResolved } = $derived.by(() => {
+  if (!statusData || !hasIncidents)
+    return { statusLabel: "", startedTime: "", isResolved: false };
+
+  // Prefer worst active incident
   for (const level of SEVERITY_ORDER) {
-    const match = statusData.incidents.find((i) => i.impact === level);
+    const match = statusData.incidents.find(
+      (i) => i.impact === level && i.status !== "resolved",
+    );
     if (match) {
       return {
         statusLabel: STATUS_LABELS[match.status] ?? match.status,
         startedTime: match.started_at ? timeSince(match.started_at) : "",
+        isResolved: false,
       };
     }
   }
+
+  // All resolved — use first resolved incident
+  const resolved = statusData.incidents.find((i) => i.status === "resolved");
+  if (resolved) {
+    const ts =
+      resolved.resolved_at || resolved.updated_at || resolved.started_at;
+    return {
+      statusLabel: "Resolved",
+      startedTime: ts ? timeSince(ts) : "",
+      isResolved: true,
+    };
+  }
+
   const fallback = statusData.incidents[0];
   return {
     statusLabel: fallback?.status ?? "",
     startedTime: fallback?.started_at ? timeSince(fallback.started_at) : "",
+    isResolved: false,
   };
 });
 
-let accentColor = $derived(indicatorColor(severity));
+let accentColor = $derived(
+  isResolved ? RESOLVED_COLOR : indicatorColor(severity),
+);
 
 function handleCollapse() {
   popoverOpen = false;
@@ -105,11 +134,13 @@ function handleClosePopover() {
       <div class="accent-bar" style:background={accentColor}></div>
       <span class="severity-dot" style:color={accentColor}>&#9679;</span>
       <div class="info">
-        <span class="title">GitHub incident — {summaryText}</span>
+        <span class="title"
+          >GitHub incident — {isResolved ? "Resolved" : summaryText}</span
+        >
         <span class="subtitle"
           >{statusLabel}
           {#if startedTime}
-            &middot; Started {startedTime}
+            &middot; {isResolved ? "" : "Started "}{startedTime}
           {/if}</span
         >
       </div>
@@ -140,7 +171,7 @@ function handleClosePopover() {
     </div>
   </div>
 {:else if hasIncidents && collapsed}
-  <StatusStrip {severity} onexpand={handleExpand} />
+  <StatusStrip {severity} resolved={isResolved} onexpand={handleExpand} />
 {/if}
 
 <style>
