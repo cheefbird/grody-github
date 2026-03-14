@@ -1,6 +1,5 @@
 <script lang="ts">
 import {
-  collapsedStorage,
   type GitHubStatusData,
   indicatorColor,
   type StatusIndicator,
@@ -10,14 +9,16 @@ import StatusStrip from "./StatusStrip.svelte";
 
 let {
   statusData,
-  collapsed: initialCollapsed,
+  collapsed,
+  oncollapse,
+  onexpand,
 }: {
   statusData: GitHubStatusData | null;
   collapsed: boolean;
+  oncollapse: () => void;
+  onexpand: () => void;
 } = $props();
 
-// svelte-ignore state_referenced_locally
-let collapsed = $state(initialCollapsed);
 let popoverOpen = $state(false);
 
 let hasIncidents = $derived((statusData?.incidents.length ?? 0) > 0);
@@ -71,18 +72,12 @@ let statusLabel = $derived.by(() => {
 let accentColor = $derived(indicatorColor(severity));
 
 function handleCollapse() {
-  collapsed = true;
   popoverOpen = false;
-  collapsedStorage.setValue(true).catch(() => {
-    collapsed = false;
-  });
+  oncollapse();
 }
 
 function handleExpand() {
-  collapsed = false;
-  collapsedStorage.setValue(false).catch(() => {
-    collapsed = true;
-  });
+  onexpand();
 }
 
 function handleTogglePopover() {

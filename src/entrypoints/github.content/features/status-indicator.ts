@@ -1,12 +1,7 @@
 import { mount, unmount } from "svelte";
 import type { ContentScriptContext } from "#imports";
-import {
-  collapsedStorage,
-  enabledStorage,
-  type GitHubStatusData,
-  statusStorage,
-} from "@/lib/github-status";
-import StatusBanner from "../StatusBanner.svelte";
+import { enabledStorage } from "@/lib/github-status";
+import StatusBannerHost from "../StatusBannerHost.svelte";
 
 function findHeader(): HTMLElement | null {
   return document.querySelector<HTMLElement>(
@@ -26,45 +21,18 @@ export async function initStatusIndicator(ctx: ContentScriptContext) {
 
   const container = document.createElement("div");
   container.id = "grody-github-status";
+  container.style.position = "relative";
+  container.style.zIndex = "33";
   header.after(container);
 
-  const stored = await statusStorage.getValue();
-  const collapsed = (await collapsedStorage.getValue()) ?? false;
-
-  let currentApp: ReturnType<typeof mount> | null = mount(StatusBanner, {
+  let app: ReturnType<typeof mount> | null = mount(StatusBannerHost, {
     target: container,
-    props: {
-      statusData: stored ?? null,
-      collapsed,
-    },
-  });
-
-  function remount(statusData: GitHubStatusData | null, collapsed: boolean) {
-    if (currentApp) {
-      unmount(currentApp);
-    }
-    currentApp = mount(StatusBanner, {
-      target: container,
-      props: { statusData, collapsed },
-    });
-  }
-
-  const unwatchStatus = statusStorage.watch(async (newValue) => {
-    const collapsed = (await collapsedStorage.getValue()) ?? false;
-    remount(newValue ?? null, collapsed);
-  });
-
-  const unwatchCollapsed = collapsedStorage.watch(async (newCollapsed) => {
-    const stored = await statusStorage.getValue();
-    remount(stored ?? null, newCollapsed);
   });
 
   ctx.onInvalidated(() => {
-    unwatchStatus();
-    unwatchCollapsed();
-    if (currentApp) {
-      unmount(currentApp);
-      currentApp = null;
+    if (app) {
+      unmount(app);
+      app = null;
     }
     container.remove();
   });
