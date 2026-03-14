@@ -1,6 +1,10 @@
 export type StatusIndicator = "none" | "minor" | "major" | "critical";
 
-export type IncidentStatus = "investigating" | "identified" | "monitoring";
+export type IncidentStatus =
+  | "investigating"
+  | "identified"
+  | "monitoring"
+  | "resolved";
 
 export type ComponentStatus =
   | "degraded_performance"
@@ -21,6 +25,7 @@ export interface StatusIncident {
   shortlink: string;
   started_at: string;
   updated_at: string;
+  resolved_at?: string;
   components: StatusComponent[];
 }
 
@@ -54,6 +59,12 @@ export function indicatorColor(indicator: StatusIndicator): string {
   if (indicator === "major") return "#f0883e";
   return "#d29922";
 }
+
+/**
+ * Accent color for resolved incidents. Separate from `indicatorColor` because
+ * "resolved" is a status concept, not a severity level.
+ */
+export const RESOLVED_COLOR = "var(--fgColor-success, #3fb950)";
 
 const TIME_UNITS = [
   { ceiling: 60, divisor: 1, suffix: "m" },
@@ -92,6 +103,7 @@ const VALID_INCIDENT_STATUSES = new Set<IncidentStatus>([
   "investigating",
   "identified",
   "monitoring",
+  "resolved",
 ]);
 
 const VALID_COMPONENT_STATUSES = new Set<ComponentStatus>([
@@ -110,13 +122,13 @@ export function transformSummary(raw: any): GitHubStatusData {
 
     const components: StatusComponent[] = (incident.components ?? [])
       .filter(
-        (c: { status: string }) =>
-          c.status !== "operational" &&
-          VALID_COMPONENT_STATUSES.has(c.status as ComponentStatus),
+        (component: { status: string }) =>
+          component.status !== "operational" &&
+          VALID_COMPONENT_STATUSES.has(component.status as ComponentStatus),
       )
-      .map((c: { name: string; status: string }) => ({
-        name: c.name,
-        status: c.status as ComponentStatus,
+      .map((component: { name: string; status: string }) => ({
+        name: component.name,
+        status: component.status as ComponentStatus,
       }));
 
     incidents.push({
@@ -127,6 +139,9 @@ export function transformSummary(raw: any): GitHubStatusData {
       shortlink: incident.shortlink ?? "",
       started_at: incident.started_at ?? "",
       updated_at: incident.updated_at ?? "",
+      ...(incident.status === "resolved" && incident.resolved_at
+        ? { resolved_at: incident.resolved_at }
+        : {}),
       components,
     });
   }
