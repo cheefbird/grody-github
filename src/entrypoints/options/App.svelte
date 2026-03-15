@@ -8,7 +8,12 @@ let status = $state<"idle" | "saving" | "success" | "error">("idle");
 let statusMessage = $state("");
 let loaded = $state(false);
 let showTokenHelp = $state(false);
-let connected = $derived(loaded && token.trim().length > 0);
+
+function stripNonASCII(raw: string): string {
+  return raw.replace(/[^\x20-\x7E]/g, "").trim();
+}
+
+let connected = $derived(loaded && stripNonASCII(token).length > 0);
 let statusEnabled = $state(true);
 let pollInterval = $state(15);
 const POLL_OPTIONS = [1, 5, 10, 15, 30, 45, 60];
@@ -71,7 +76,7 @@ async function handleIntervalChange(event: Event) {
 async function handleSave() {
   status = "saving";
   statusMessage = "";
-  const trimmed = token.trim();
+  const trimmed = stripNonASCII(token);
 
   if (!trimmed) {
     try {
