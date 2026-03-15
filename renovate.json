@@ -7,8 +7,7 @@
     "before 5am every weekday"
   ],
   "prConcurrentLimit": 3,
-  "automerge": true,
-  "automergeStrategy": "squash",
+  "automerge": false,
   "major": {
     "automerge": false
   },
