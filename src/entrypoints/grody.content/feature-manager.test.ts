@@ -3,7 +3,6 @@ import type { ContentScriptContext } from "wxt/utils/content-script-context";
 import type { FeatureDefinition } from "@/lib/feature-types";
 import { createFeatureManager } from "./feature-manager";
 
-// Mock buildPageContext so we control the PageContext in tests
 vi.mock("./page-context", () => ({
   buildPageContext: vi.fn((url: URL) => ({
     url,
@@ -24,7 +23,6 @@ function makeFeature(
   };
 }
 
-// Minimal mock for ContentScriptContext
 function mockCtx() {
   const callbacks: Array<() => void> = [];
   return {
@@ -62,8 +60,6 @@ describe("createFeatureManager", () => {
       const ctx = mockCtx();
       const manager = createFeatureManager([feature], ctx);
 
-      // window.location.href in test env is something like http://localhost:3000/
-      // So include: [isActions] won't match
       await manager.run();
 
       expect(feature.init).not.toHaveBeenCalled();
@@ -218,11 +214,9 @@ describe("createFeatureManager", () => {
       const ctx = mockCtx();
       const manager = createFeatureManager([feature], ctx);
 
-      // Navigate to actions page — should init
       await manager.onNavigate(ACTIONS_URL);
       expect(feature.init).toHaveBeenCalledOnce();
 
-      // Navigate to home — should NOT init (teardown only)
       await manager.onNavigate(HOME_URL);
       expect(feature.init).toHaveBeenCalledOnce(); // still 1
     });
@@ -268,10 +262,8 @@ describe("createFeatureManager", () => {
       const manager = createFeatureManager([badFeature, goodFeature], ctx);
 
       await manager.run();
-      // Navigate — triggers teardown of bad feature, then re-init of both
       await manager.onNavigate(ACTIONS_URL);
 
-      // Good feature should still have been re-initialized
       expect(goodFeature.init).toHaveBeenCalledTimes(2);
     });
   });

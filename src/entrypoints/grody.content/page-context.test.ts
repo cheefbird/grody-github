@@ -8,7 +8,6 @@ import {
   isRepoPage,
 } from "./page-context";
 
-/** Helper: build a PageContext from a pathname. */
 function ctx(pathname: string): PageContext {
   return buildPageContext(new URL(`https://github.com${pathname}`));
 }

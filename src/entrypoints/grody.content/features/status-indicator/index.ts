@@ -29,13 +29,9 @@ const definition: FeatureDefinition = {
     });
 
     signal.addEventListener("abort", () => {
-      try {
-        if (app) {
-          unmount(app);
-          app = null;
-        }
-      } catch (err) {
-        console.error("[grody] status-indicator unmount error:", err);
+      if (app) {
+        unmount(app);
+        app = null;
       }
       container.remove();
     });

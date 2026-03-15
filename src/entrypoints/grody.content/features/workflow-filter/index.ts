@@ -53,11 +53,7 @@ const definition: FeatureDefinition = {
     });
 
     signal.addEventListener("abort", () => {
-      try {
-        unmount(app);
-      } catch (err) {
-        console.error("[grody] workflow-filter unmount error:", err);
-      }
+      unmount(app);
       container.remove();
     });
   },
