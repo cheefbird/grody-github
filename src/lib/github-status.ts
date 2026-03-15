@@ -46,7 +46,7 @@ export const pollIntervalStorage = storage.defineItem<number>(
 
 export const enabledStorage = storage.defineItem<boolean>(
   "local:github-status:enabled",
-  { fallback: true },
+  { fallback: false },
 );
 
 export const collapsedStorage = storage.defineItem<boolean>(
