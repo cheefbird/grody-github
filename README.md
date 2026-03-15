@@ -14,7 +14,9 @@ GitHub's UI is fine. Until it isn't. If you've ever scrolled through a sidebar o
 
 Grody GitHub is a Chrome extension that bolts small, targeted fixes onto GitHub's interface. One feature at a time. No bloat.
 
-## Features
+## Core Features
+
+Core features are enabled by default and may/may not have an option to disable. Requests to change this are always welcome, just create a discussion first.
 
 ### Workflow Sidebar Filter
 
@@ -25,9 +27,22 @@ Adds a search box to the Actions sidebar so you can actually find your workflows
 - Works with dark theme
 - Handles repos with hundreds of workflows without breaking a sweat
 
-## Install
+### Optional Features
 
-Not on the Chrome Web Store yet. For now, sideload it:
+Optional features are opt-in only. You've gotta go to the options to turn it on.
+
+### GitHub Incident Status
+
+GitHub is basically always having an incident these days. This puts a banner below the header so you know before you start blaming your code.
+
+- Opt-in by enabling from the options screen
+- Polls GitHub's status API in the background — defaults to 15 min, but you can change it in options
+- Color-coded severity with a details popover showing per-component breakdown
+- Dismissible, remembers your preference, auto-clears on resolve
+
+## Install Locally
+
+If you want to contribute, or just build the extension from source for whatever reason, here you go:
 
 ```bash
 git clone https://github.com/cheefbird/grody-github.git
@@ -41,7 +56,7 @@ Then in Chrome:
 1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top right)
 3. Click **Load unpacked**
-4. Select the `.output/chrome-mv3` directory
+4. Select the `~/path/to/grody-github/.output/chrome-mv3` directory from the repo root on your machine
 
 ## Setup
 
@@ -58,6 +73,9 @@ Then in Chrome:
 ```bash
 pnpm dev            # Dev server with hot reload (Chrome)
 pnpm dev:firefox    # Dev server (Firefox)
+pnpm format         # Biome formatter
+pnpm lint           # Biome linter
+pnpm biocheck       # Biome check (format + lint)
 pnpm check          # Svelte type checking
 ```
 
