@@ -1,7 +1,7 @@
-// node defers errors from abort signal listeners via nextTick instead of
-// rethrowing synchronously (browsers rethrow). suppress these so teardown
-// isolation tests pass cleanly. rethrow anything else.
+// node defers abort listener errors via nextTick, so they fire after test
+// lifecycle hooks complete. suppress only the intentional "teardown boom"
+// error from the feature-manager teardown isolation test.
 process.on("uncaughtException", (err) => {
-  if (err instanceof Error && err.stack?.includes("abort_controller")) return;
+  if (err instanceof Error && err.message === "teardown boom") return;
   throw err;
 });

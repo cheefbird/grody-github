@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContentScriptContext } from "wxt/utils/content-script-context";
 import type { FeatureDefinition } from "@/lib/feature-types";
 import { createFeatureManager } from "./feature-manager";
@@ -39,6 +39,14 @@ const ACTIONS_URL = new URL("https://github.com/owner/repo/actions");
 const HOME_URL = new URL("https://github.com/");
 
 describe("createFeatureManager", () => {
+  beforeEach(() => {
+    vi.stubGlobal("location", HOME_URL);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   describe("run", () => {
     it("initializes features with no include/exclude on any page", async () => {
       const feature = makeFeature();
@@ -125,7 +133,6 @@ describe("createFeatureManager", () => {
       await manager.run();
 
       expect(feature.init).toHaveBeenCalledOnce();
-      vi.unstubAllGlobals();
     });
 
     it("provides an AbortSignal to each feature init", async () => {

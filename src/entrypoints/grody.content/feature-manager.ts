@@ -6,6 +6,14 @@ export function createFeatureManager(
   features: FeatureDefinition[],
   ctx: ContentScriptContext,
 ) {
+  if (import.meta.env.DEV) {
+    const ids = features.map((f) => f.id);
+    const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+    if (dupes.length > 0) {
+      console.error(`[grody] duplicate feature IDs: ${dupes.join(", ")}`);
+    }
+  }
+
   const activeControllers = new Map<string, AbortController>();
 
   function shouldRun(
@@ -44,9 +52,7 @@ export function createFeatureManager(
   }
 
   async function run() {
-    const href =
-      typeof location !== "undefined" ? location.href : "http://localhost/";
-    const pageCtx = buildPageContext(new URL(href));
+    const pageCtx = buildPageContext(new URL(location.href));
     await Promise.allSettled(features.map((f) => initFeature(f, pageCtx)));
   }
 

@@ -43,7 +43,7 @@ const definition: FeatureDefinition = {
     const container = document.createElement("div");
     workflowsSection.before(container);
 
-    const app = mount(WorkflowFilter, {
+    let app: ReturnType<typeof mount> | null = mount(WorkflowFilter, {
       target: container,
       props: {
         owner: repoInfo.owner,
@@ -53,7 +53,10 @@ const definition: FeatureDefinition = {
     });
 
     signal.addEventListener("abort", () => {
-      unmount(app);
+      if (app) {
+        unmount(app);
+        app = null;
+      }
       container.remove();
     });
   },

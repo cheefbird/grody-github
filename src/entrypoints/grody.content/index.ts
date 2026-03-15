@@ -17,7 +17,9 @@ export default defineContentScript({
     await manager.run();
 
     ctx.addEventListener(window, "wxt:locationchange", ({ newUrl }) => {
-      manager.onNavigate(newUrl).catch(console.error);
+      manager.onNavigate(newUrl).catch((err) => {
+        console.error("[grody] navigation handler failed:", err);
+      });
     });
   },
 });
