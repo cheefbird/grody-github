@@ -27,7 +27,7 @@ Adds a search box to the Actions sidebar so you can actually find your workflows
 - Works with dark theme
 - Handles repos with hundreds of workflows without breaking a sweat
 
-### Optional Features
+## Optional Features
 
 Optional features are opt-in only. You've gotta go to the options to turn it on.
 
