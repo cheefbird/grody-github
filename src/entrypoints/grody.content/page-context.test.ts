@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { PageContext } from "@/lib/feature-types";
 import {
   buildPageContext,
   isActionsPage,
@@ -6,7 +7,6 @@ import {
   isPRPage,
   isRepoPage,
 } from "./page-context";
-import type { PageContext } from "@/lib/feature-types";
 
 /** Helper: build a PageContext from a pathname. */
 function ctx(pathname: string): PageContext {
