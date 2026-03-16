@@ -1069,8 +1069,8 @@ packages:
   growly@1.3.0:
     resolution: {integrity: sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==}
 
-  hookable@6.0.1:
-    resolution: {integrity: sha512-uKGyY8BuzN/a5gvzvA+3FVWo0+wUjgtfSdnmjtrOVwQCZPHpHDH2WRO3VZSOeluYrHoDCiXFffZXs8Dj1ULWtw==}
+  hookable@6.1.0:
+    resolution: {integrity: sha512-ZoKZSJgu8voGK2geJS+6YtYjvIzu9AOM/KZXsBxr83uhLL++e9pEv/dlgwgy3dvHg06kTz6JOh1hk3C8Ceiymw==}
 
   html-escaper@3.0.3:
     resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
@@ -2844,7 +2844,7 @@ snapshots:
 
   growly@1.3.0: {}
 
-  hookable@6.0.1: {}
+  hookable@6.1.0: {}
 
   html-escaper@3.0.3: {}
 
@@ -3782,7 +3782,7 @@ snapshots:
       fs-extra: 11.3.4
       get-port-please: 3.2.0
       giget: 3.1.2
-      hookable: 6.0.1
+      hookable: 6.1.0
       import-meta-resolve: 4.2.0
       is-wsl: 3.1.1
       json5: 2.2.3
