@@ -14,6 +14,7 @@ export default defineConfig({
   zip: {
     name: "grody-github",
     artifactTemplate: "{{name}}-v{{version}}-{{browser}}.zip",
+    sourcesTemplate: "{{name}}-v{{version}}-sources.zip",
   },
   manifest: {
     name: "Grody Github",

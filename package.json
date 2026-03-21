@@ -14,8 +14,9 @@
     "zip:firefox": "wxt zip -b firefox",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "format": "biome format",
-    "biocheck": "biome check",
-    "lint": "biome lint",
+    "format:fix": "biome format --fix",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "wxt prepare"

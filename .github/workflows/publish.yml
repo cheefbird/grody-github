@@ -1,0 +1,161 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run"
+        type: boolean
+        default: true
+      stores:
+        description: "Which store(s)?"
+        type: choice
+        options:
+          - both
+          - chrome
+          - firefox
+        default: both
+      chrome-submit-for-review:
+        description: "Submit Chrome for review"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish-chrome:
+    if: >-
+      github.event_name == 'release' ||
+      inputs.stores == 'chrome' ||
+      inputs.stores == 'both'
+    runs-on: ubuntu-latest
+    environment: chrome-store
+    concurrency:
+      group: publish-chrome
+      cancel-in-progress: false
+    steps:
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [ "$EVENT_NAME" = "release" ]; then
+            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          else
+            TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Chrome zip
+        run: |
+          mkdir -p .output
+          gh release download "$RELEASE_TAG" \
+            --repo "$REPO" \
+            --pattern "*-chrome.zip" \
+            --dir .output
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate download
+        id: chrome-zip
+        run: |
+          files=( .output/*-chrome.zip )
+          if [ ${#files[@]} -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::Expected exactly 1 chrome zip, found: ${files[*]}"
+            ls -la .output/
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+          echo "Found: ${files[0]}"
+
+      - name: Submit to Chrome Web Store
+        run: |
+          npx wxt submit \
+            --chrome-zip "$CHROME_ZIP" \
+            ${{ inputs.dry-run == true && '--dry-run' || '' }}
+        env:
+          CHROME_ZIP: ${{ steps.chrome-zip.outputs.path }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_SKIP_SUBMIT_REVIEW: ${{ inputs.chrome-submit-for-review == true && 'false' || 'true' }}
+
+  publish-firefox:
+    if: >-
+      github.event_name == 'release' ||
+      inputs.stores == 'firefox' ||
+      inputs.stores == 'both'
+    runs-on: ubuntu-latest
+    environment: firefox-store
+    concurrency:
+      group: publish-firefox
+      cancel-in-progress: false
+    steps:
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [ "$EVENT_NAME" = "release" ]; then
+            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          else
+            TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Firefox zips
+        run: |
+          mkdir -p .output
+          gh release download "$RELEASE_TAG" \
+            --repo "$REPO" \
+            --pattern "*-firefox.zip" \
+            --pattern "*-sources.zip" \
+            --dir .output
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate downloads
+        id: firefox-zips
+        run: |
+          ff_files=( .output/*-firefox.zip )
+          src_files=( .output/*-sources.zip )
+          if [ ${#ff_files[@]} -ne 1 ] || [ ! -f "${ff_files[0]}" ]; then
+            echo "::error::Expected exactly 1 firefox zip, found: ${ff_files[*]}"
+            ls -la .output/
+            exit 1
+          fi
+          if [ ${#src_files[@]} -ne 1 ] || [ ! -f "${src_files[0]}" ]; then
+            echo "::error::Expected exactly 1 sources zip, found: ${src_files[*]}"
+            ls -la .output/
+            exit 1
+          fi
+          echo "firefox-path=${ff_files[0]}" >> "$GITHUB_OUTPUT"
+          echo "sources-path=${src_files[0]}" >> "$GITHUB_OUTPUT"
+          echo "Found: ${ff_files[0]} ${src_files[0]}"
+
+      - name: Submit to Firefox Add-ons
+        run: |
+          npx wxt submit \
+            --firefox-zip "$FIREFOX_ZIP" \
+            --firefox-sources-zip "$SOURCES_ZIP" \
+            ${{ inputs.dry-run == true && '--dry-run' || '' }}
+        env:
+          FIREFOX_ZIP: ${{ steps.firefox-zips.outputs.firefox-path }}
+          SOURCES_ZIP: ${{ steps.firefox-zips.outputs.sources-path }}
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
