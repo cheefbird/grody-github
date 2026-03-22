@@ -73,6 +73,15 @@ async function handleIntervalChange(event: Event) {
   }
 }
 
+function handleSubmit(e: Event) {
+  e.preventDefault();
+  handleSave().catch((err) => {
+    console.error("[grody-github] Unexpected error:", err);
+    status = "error";
+    statusMessage = "An unexpected error occurred.";
+  });
+}
+
 async function handleSave() {
   status = "saving";
   statusMessage = "";
@@ -161,16 +170,7 @@ async function handleSave() {
       scoped to just the repos you need.
     </p>
   {/if}
-  <form
-    onsubmit={(e) => {
-      e.preventDefault();
-      handleSave().catch((err) => {
-        console.error("[grody-github] Unexpected error:", err);
-        status = "error";
-        statusMessage = "An unexpected error occurred.";
-      });
-    }}
-  >
+  <form onsubmit={handleSubmit}>
     <input id="pat" type="password" bind:value={token} placeholder="ghp_...">
 
     <button type="submit" disabled={status === "saving"}>
