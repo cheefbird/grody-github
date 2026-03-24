@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  check:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -41,5 +41,8 @@ jobs:
       - name: Type check
         run: pnpm check
 
-      - name: Run build
+      - name: Build Chrome
         run: pnpm build
+
+      - name: Build Firefox
+        run: pnpm build:firefox
