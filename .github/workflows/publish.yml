@@ -13,10 +13,11 @@ on:
         description: "Which store(s)?"
         type: choice
         options:
-          - both
+          - all
           - chrome
           - firefox
-        default: both
+          - edge
+        default: all
       chrome-submit-for-review:
         description: "Submit Chrome for review"
         type: boolean
@@ -30,7 +31,7 @@ jobs:
     if: >-
       github.event_name == 'release' ||
       inputs.stores == 'chrome' ||
-      inputs.stores == 'both'
+      inputs.stores == 'all'
     runs-on: ubuntu-latest
     environment: chrome-store
     concurrency:
@@ -93,7 +94,7 @@ jobs:
     if: >-
       github.event_name == 'release' ||
       inputs.stores == 'firefox' ||
-      inputs.stores == 'both'
+      inputs.stores == 'all'
     runs-on: ubuntu-latest
     environment: firefox-store
     concurrency:
@@ -159,3 +160,65 @@ jobs:
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+
+  publish-edge:
+    if: >-
+      github.event_name == 'release' ||
+      inputs.stores == 'edge' ||
+      inputs.stores == 'all'
+    runs-on: ubuntu-latest
+    environment: edge-store
+    concurrency:
+      group: publish-edge
+      cancel-in-progress: false
+    steps:
+      - name: Resolve release tag
+        id: release
+        run: |
+          if [ "$EVENT_NAME" = "release" ]; then
+            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          else
+            TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Edge zip
+        run: |
+          mkdir -p .output
+          gh release download "$RELEASE_TAG" \
+            --repo "$REPO" \
+            --pattern "*-edge.zip" \
+            --dir .output
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate download
+        id: edge-zip
+        run: |
+          files=( .output/*-edge.zip )
+          if [ ${#files[@]} -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::Expected exactly 1 edge zip, found: ${files[*]}"
+            ls -la .output/
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+          echo "Found: ${files[0]}"
+
+      - name: Submit to Edge Add-ons
+        run: |
+          npx wxt submit \
+            --edge-zip "$EDGE_ZIP" \
+            $DRY_RUN_FLAG
+        env:
+          EDGE_ZIP: ${{ steps.edge-zip.outputs.path }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          DRY_RUN_FLAG: ${{ inputs.dry-run == true && '--dry-run' || '' }}

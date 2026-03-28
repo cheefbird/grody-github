@@ -46,3 +46,6 @@ jobs:
 
       - name: Build Firefox
         run: pnpm build:firefox
+
+      - name: Build Edge
+        run: pnpm build:edge
