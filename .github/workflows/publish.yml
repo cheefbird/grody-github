@@ -1,8 +1,6 @@
 name: Publish to Stores
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       dry-run:
@@ -13,10 +11,11 @@ on:
         description: "Which store(s)?"
         type: choice
         options:
-          - both
+          - all
           - chrome
           - firefox
-        default: both
+          - edge
+        default: all
       chrome-submit-for-review:
         description: "Submit Chrome for review"
         type: boolean
@@ -26,19 +25,14 @@ permissions:
   contents: read
 
 jobs:
-  publish-chrome:
-    if: >-
-      github.event_name == 'release' ||
-      inputs.stores == 'chrome' ||
-      inputs.stores == 'both'
+  resolve-tag:
     runs-on: ubuntu-latest
-    environment: chrome-store
-    concurrency:
-      group: publish-chrome
-      cancel-in-progress: false
+    timeout-minutes: 2
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Resolve release tag
-        id: release
+        id: tag
         run: |
           if [ "$EVENT_NAME" = "release" ]; then
             echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
@@ -52,6 +46,19 @@ jobs:
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  publish-chrome:
+    needs: resolve-tag
+    if: >-
+      github.event_name == 'release' ||
+      inputs.stores == 'chrome' ||
+      inputs.stores == 'all'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: chrome-store
+    concurrency:
+      group: publish-chrome
+      cancel-in-progress: false
+    steps:
       - name: Download Chrome zip
         run: |
           mkdir -p .output
@@ -60,7 +67,7 @@ jobs:
             --pattern "*-chrome.zip" \
             --dir .output
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TAG: ${{ needs.resolve-tag.outputs.tag }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -80,7 +87,7 @@ jobs:
         run: |
           npx wxt submit \
             --chrome-zip "$CHROME_ZIP" \
-            ${{ inputs.dry-run == true && '--dry-run' || '' }}
+            $DRY_RUN_FLAG
         env:
           CHROME_ZIP: ${{ steps.chrome-zip.outputs.path }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
@@ -88,33 +95,21 @@ jobs:
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
           CHROME_SKIP_SUBMIT_REVIEW: ${{ inputs.chrome-submit-for-review == true && 'false' || 'true' }}
+          DRY_RUN_FLAG: ${{ inputs.dry-run == true && '--dry-run' || '' }}
 
   publish-firefox:
+    needs: resolve-tag
     if: >-
       github.event_name == 'release' ||
       inputs.stores == 'firefox' ||
-      inputs.stores == 'both'
+      inputs.stores == 'all'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     environment: firefox-store
     concurrency:
       group: publish-firefox
       cancel-in-progress: false
     steps:
-      - name: Resolve release tag
-        id: release
-        run: |
-          if [ "$EVENT_NAME" = "release" ]; then
-            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
-          else
-            TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
-            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Download Firefox zips
         run: |
           mkdir -p .output
@@ -124,7 +119,7 @@ jobs:
             --pattern "*-sources.zip" \
             --dir .output
         env:
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TAG: ${{ needs.resolve-tag.outputs.tag }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -152,10 +147,60 @@ jobs:
           npx wxt submit \
             --firefox-zip "$FIREFOX_ZIP" \
             --firefox-sources-zip "$SOURCES_ZIP" \
-            ${{ inputs.dry-run == true && '--dry-run' || '' }}
+            $DRY_RUN_FLAG
         env:
           FIREFOX_ZIP: ${{ steps.firefox-zips.outputs.firefox-path }}
           SOURCES_ZIP: ${{ steps.firefox-zips.outputs.sources-path }}
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          DRY_RUN_FLAG: ${{ inputs.dry-run == true && '--dry-run' || '' }}
+
+  publish-edge:
+    needs: resolve-tag
+    if: >-
+      github.event_name == 'release' ||
+      inputs.stores == 'edge' ||
+      inputs.stores == 'all'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: edge-store
+    concurrency:
+      group: publish-edge
+      cancel-in-progress: false
+    steps:
+      - name: Download Edge zip
+        run: |
+          mkdir -p .output
+          gh release download "$RELEASE_TAG" \
+            --repo "$REPO" \
+            --pattern "*-edge.zip" \
+            --dir .output
+        env:
+          RELEASE_TAG: ${{ needs.resolve-tag.outputs.tag }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate download
+        id: edge-zip
+        run: |
+          files=( .output/*-edge.zip )
+          if [ ${#files[@]} -ne 1 ] || [ ! -f "${files[0]}" ]; then
+            echo "::error::Expected exactly 1 edge zip, found: ${files[*]}"
+            ls -la .output/
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+          echo "Found: ${files[0]}"
+
+      - name: Submit to Edge Add-ons
+        run: |
+          npx wxt submit \
+            --edge-zip "$EDGE_ZIP" \
+            $DRY_RUN_FLAG
+        env:
+          EDGE_ZIP: ${{ steps.edge-zip.outputs.path }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          DRY_RUN_FLAG: ${{ inputs.dry-run == true && '--dry-run' || '' }}

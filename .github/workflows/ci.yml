@@ -8,9 +8,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -33,7 +38,9 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+        env:
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: "3"
 
       - name: Run tests
         run: pnpm test
@@ -46,3 +53,6 @@ jobs:
 
       - name: Build Firefox
         run: pnpm build:firefox
+
+      - name: Build Edge
+        run: pnpm build:edge

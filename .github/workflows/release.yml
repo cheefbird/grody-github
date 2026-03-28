@@ -11,6 +11,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -39,7 +40,9 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+        env:
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: "3"
 
       - name: Run tests
         run: pnpm test
@@ -53,6 +56,9 @@ jobs:
       - name: Build Firefox zip
         run: pnpm zip:firefox
 
+      - name: Build Edge zip
+        run: pnpm zip:edge
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2
         with:
@@ -60,4 +66,5 @@ jobs:
           files: |
             .output/*-chrome.zip
             .output/*-firefox.zip
+            .output/*-edge.zip
             .output/*-sources.zip
