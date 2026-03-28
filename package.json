@@ -8,10 +8,10 @@
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
+    "dev:edge": "wxt -b edge",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
-    "zip": "wxt zip",
-    "zip:firefox": "wxt zip -b firefox",
+    "build:edge": "wxt build -b edge",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "format": "biome format",
     "format:fix": "biome format --fix",
@@ -19,6 +19,9 @@
     "lint:fix": "biome check --fix",
     "test": "vitest run",
     "test:watch": "vitest",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "zip:edge": "wxt zip -b edge",
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
