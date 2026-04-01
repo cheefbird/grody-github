@@ -22,7 +22,14 @@ const definition: FeatureDefinition = {
       SIDEBAR_NAV_SELECTOR,
       signal,
     );
-    if (!navList) return;
+    if (!navList) {
+      if (import.meta.env.DEV && !signal.aborted) {
+        console.warn(
+          "[grody:workflow-filter] sidebar nav not found after waiting",
+        );
+      }
+      return;
+    }
 
     const showMore = navList
       .closest("nav")

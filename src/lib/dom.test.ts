@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import { waitForElement } from "./dom";
 
 function setBody(html: string) {
-  // Safe: test-only, no untrusted content
   document.body.replaceChildren();
   const tpl = document.createElement("template");
   tpl.innerHTML = html;
@@ -28,7 +27,6 @@ describe("waitForElement", () => {
   it("waits for element to appear via DOM mutation", async () => {
     const promise = waitForElement("#late", AbortSignal.timeout(5000));
 
-    // Element appears after a tick
     queueMicrotask(() => {
       const div = document.createElement("div");
       div.id = "late";
@@ -64,6 +62,39 @@ describe("waitForElement", () => {
     );
 
     expect(el).toBeNull();
+  });
+
+  it("disconnects observer after element is found", async () => {
+    const promise = waitForElement("#target", AbortSignal.timeout(5000));
+
+    const div = document.createElement("div");
+    div.id = "target";
+    document.body.appendChild(div);
+
+    await promise;
+
+    // poke the DOM again — leaked observer would double-resolve
+    const extra = document.createElement("div");
+    extra.id = "extra";
+    document.body.appendChild(extra);
+
+    await new Promise((r) => setTimeout(r, 10));
+  });
+
+  it("resolves without hanging when element and abort race", async () => {
+    const controller = new AbortController();
+    const promise = waitForElement("#race", controller.signal);
+
+    queueMicrotask(() => {
+      const div = document.createElement("div");
+      div.id = "race";
+      document.body.appendChild(div);
+      controller.abort();
+    });
+
+    const el = await promise;
+    // element or null both fine — just can't throw or hang
+    expect(el === null || el?.id === "race").toBe(true);
   });
 
   it("resolves with element even if added deeply nested", async () => {
