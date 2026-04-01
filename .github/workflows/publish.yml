@@ -83,6 +83,11 @@ jobs:
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
           echo "Found: ${files[0]}"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 24
+
       - name: Submit to Chrome Web Store
         run: |
           npx wxt submit \
@@ -142,6 +147,11 @@ jobs:
           echo "sources-path=${src_files[0]}" >> "$GITHUB_OUTPUT"
           echo "Found: ${ff_files[0]} ${src_files[0]}"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 24
+
       - name: Submit to Firefox Add-ons
         run: |
           npx wxt submit \
@@ -192,6 +202,11 @@ jobs:
           fi
           echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
           echo "Found: ${files[0]}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: 24
 
       - name: Submit to Edge Add-ons
         run: |
