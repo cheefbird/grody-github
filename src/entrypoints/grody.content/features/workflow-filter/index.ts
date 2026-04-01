@@ -1,22 +1,11 @@
 import { mount, unmount } from "svelte";
+import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
 import { isActionsPage } from "../../page-context";
 import WorkflowFilter from "./WorkflowFilter.svelte";
 
 const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
-
-function findNavList(): HTMLElement | null {
-  const navList = document.querySelector<HTMLElement>(SIDEBAR_NAV_SELECTOR);
-  if (!navList) return null;
-  const showMore = navList
-    .closest("nav")
-    ?.querySelector<HTMLElement>(SHOW_MORE_SELECTOR);
-  if (!showMore) return null;
-  const totalPages = Number(showMore.dataset.totalPages ?? "1");
-  if (totalPages <= 1) return null;
-  return navList;
-}
 
 function parseRepo(): { owner: string; repo: string } | null {
   const parts = location.pathname.split("/").filter(Boolean);
@@ -28,9 +17,26 @@ const definition: FeatureDefinition = {
   id: "workflow-filter",
   include: [isActionsPage],
   reinitOnNavigation: true,
-  init(_ctx, signal) {
-    const navList = findNavList();
-    if (!navList) return;
+  async init(_ctx, signal) {
+    const navList = await waitForElement<HTMLElement>(
+      SIDEBAR_NAV_SELECTOR,
+      signal,
+    );
+    if (!navList) {
+      if (import.meta.env.DEV && !signal.aborted) {
+        console.warn(
+          "[grody:workflow-filter] sidebar nav not found after waiting",
+        );
+      }
+      return;
+    }
+
+    const showMore = navList
+      .closest("nav")
+      ?.querySelector<HTMLElement>(SHOW_MORE_SELECTOR);
+    if (!showMore) return;
+    const totalPages = Number(showMore.dataset.totalPages ?? "1");
+    if (totalPages <= 1) return;
 
     const repoInfo = parseRepo();
     if (!repoInfo) return;
