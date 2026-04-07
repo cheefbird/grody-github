@@ -1,6 +1,7 @@
 import { mount, unmount } from "svelte";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
+import { deploymentsEnabledStorage } from "@/lib/org-deployments-storage";
 import { isOrgInsightsPage } from "../../page-context";
 import OrgDeployments from "./OrgDeployments.svelte";
 
@@ -117,6 +118,9 @@ const definition: FeatureDefinition = {
   include: [isOrgInsightsPage],
   reinitOnNavigation: true,
   async init(_ctx, signal) {
+    const enabled = await deploymentsEnabledStorage.getValue();
+    if (!enabled || signal.aborted) return;
+
     const org = parseOrg();
     if (!org) return;
 

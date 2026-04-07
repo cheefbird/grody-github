@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { enabledStorage, pollIntervalStorage } from "@/lib/github-status";
+import { deploymentsEnabledStorage } from "@/lib/org-deployments-storage";
 import { tokenStorage } from "@/lib/storage";
 
 let token = $state("");
@@ -15,6 +16,7 @@ function stripNonASCII(raw: string): string {
 
 let connected = $derived(loaded && stripNonASCII(token).length > 0);
 let statusEnabled = $state(true);
+let deploymentsEnabled = $state(true);
 let pollInterval = $state(15);
 const POLL_OPTIONS = [1, 5, 10, 15, 30, 45, 60];
 
@@ -35,10 +37,11 @@ onMount(async () => {
   try {
     statusEnabled = await enabledStorage.getValue();
     pollInterval = await pollIntervalStorage.getValue();
+    deploymentsEnabled = await deploymentsEnabledStorage.getValue();
   } catch (err) {
-    console.error("[grody-github] Failed to load status settings:", err);
+    console.error("[grody-github] Failed to load feature settings:", err);
     status = "error";
-    statusMessage = "Failed to load status settings. Defaults shown.";
+    statusMessage = "Failed to load feature settings. Defaults shown.";
   }
   loaded = true;
 });
@@ -59,6 +62,15 @@ async function handleStatusToggle() {
     await enabledStorage.setValue(statusEnabled);
   } catch {
     statusEnabled = !statusEnabled;
+  }
+}
+
+async function handleDeploymentsToggle() {
+  deploymentsEnabled = !deploymentsEnabled;
+  try {
+    await deploymentsEnabledStorage.setValue(deploymentsEnabled);
+  } catch {
+    deploymentsEnabled = !deploymentsEnabled;
   }
 }
 
@@ -150,9 +162,7 @@ async function handleSave() {
     <ul class="scope-list">
       <li>
         <strong>Fine-grained token</strong>: grant
-        <strong>Actions (read)</strong>,
-        <strong>Deployments (read)</strong>, and
-        <strong>Metadata (read)</strong>
+        <strong>Actions (read)</strong>
         on the repos you need. No permissions needed for public repos.
       </li>
       <li>
@@ -186,6 +196,31 @@ async function handleSave() {
       <span role="alert" class="msg error">Error: {statusMessage}</span>
     {/if}
   </form>
+
+  <hr
+    style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
+  >
+
+  <h2>Org Deployments Dashboard</h2>
+  <p>View deployment status across all repos in an organization.</p>
+
+  <div
+    style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"
+  >
+    <label for="deployments-enabled" style="margin:0;">Enabled</label>
+    <input
+      id="deployments-enabled"
+      type="checkbox"
+      checked={deploymentsEnabled}
+      onchange={handleDeploymentsToggle}
+    >
+  </div>
+
+  <p class="hint">
+    Requires a token with <strong>Deployments (read)</strong> and
+    <strong>Metadata (read)</strong>
+    permissions.
+  </p>
 
   <hr
     style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
@@ -273,6 +308,10 @@ input {
   box-sizing: border-box;
   background: light-dark(#ffffff, #161b22);
   color: light-dark(#24292f, #e6edf3);
+}
+input[type="checkbox"] {
+  width: auto;
+  margin-bottom: 0;
 }
 button {
   padding: 0.4rem 1rem;
