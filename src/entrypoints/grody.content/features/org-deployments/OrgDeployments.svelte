@@ -37,23 +37,37 @@ function initExpandedState(envGroups: EnvironmentGroup[]) {
 }
 
 async function initPins(envGroups: EnvironmentGroup[]) {
-  const stored = await getPinnedEnvironments(org);
-  if (stored) {
-    pinnedNames = stored;
-  } else {
-    const detected = autoDetectPins(envGroups.map((g) => g.name));
-    pinnedNames = detected;
+  try {
+    const stored = await getPinnedEnvironments(org);
+    if (stored) {
+      pinnedNames = stored;
+      return;
+    }
+  } catch (err) {
+    console.warn("[grody-github] Failed to read pinned envs:", err);
+  }
+  const detected = autoDetectPins(envGroups.map((g) => g.name));
+  pinnedNames = detected;
+  try {
     await setPinnedEnvironments(org, detected);
+  } catch (err) {
+    console.warn("[grody-github] Failed to save pinned envs:", err);
   }
 }
 
 async function handleTogglePin(envName: string) {
+  const previous = pinnedNames;
   const isPinned = pinnedNames.includes(envName);
   const updated = isPinned
     ? pinnedNames.filter((n) => n !== envName)
     : [...pinnedNames, envName];
   pinnedNames = updated;
-  await setPinnedEnvironments(org, updated);
+  try {
+    await setPinnedEnvironments(org, updated);
+  } catch (err) {
+    console.warn("[grody-github] Failed to persist pin change:", err);
+    pinnedNames = previous;
+  }
 }
 
 async function handleRefresh() {
@@ -64,7 +78,16 @@ async function handleRefresh() {
       groups = result.groups;
       cacheTimestamp = result.timestamp;
       initColorMap(result.groups);
+      hint = null;
+    } else {
+      hint =
+        result.reason === "rate-limited"
+          ? "Rate limited — try again later"
+          : "Refresh failed";
     }
+  } catch (err) {
+    console.error("[grody-github] Refresh failed:", err);
+    hint = "Refresh failed — extension may need to be reloaded";
   } finally {
     refreshing = false;
   }
@@ -148,7 +171,8 @@ onMount(() => {
       initColorMap(result.groups);
       await initPins(result.groups);
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error("[grody-github] Deployment load failed:", err);
       hint = "Failed to load deployments";
     });
 });

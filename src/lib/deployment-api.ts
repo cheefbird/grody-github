@@ -186,9 +186,17 @@ export async function getOrgDeployments(
 ): Promise<DeploymentResult> {
   try {
     if (!force) {
-      const cached = await getCachedDeployments(org);
-      if (cached) {
-        return { ok: true, groups: cached.groups, timestamp: cached.timestamp };
+      try {
+        const cached = await getCachedDeployments(org);
+        if (cached) {
+          return {
+            ok: true,
+            groups: cached.groups,
+            timestamp: cached.timestamp,
+          };
+        }
+      } catch {
+        console.warn("[grody-github] Cache read failed, fetching fresh data");
       }
     }
 
@@ -198,7 +206,11 @@ export async function getOrgDeployments(
     }
 
     const groups = await fetchOrgDeployments(org, token);
-    await setCachedDeployments(org, groups);
+    try {
+      await setCachedDeployments(org, groups);
+    } catch (cacheErr) {
+      console.warn("[grody-github] Failed to cache deployments:", cacheErr);
+    }
     return { ok: true, groups, timestamp: Date.now() };
   } catch (err) {
     console.error("[grody-github] Failed to fetch deployments:", err);
