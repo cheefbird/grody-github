@@ -79,23 +79,28 @@ function handlePinClick(e: Event) {
 }
 
 .pin-btn {
-  all: unset;
-  cursor: pointer;
-  color: var(--fgColor-muted, #7d8590);
-  opacity: 0.4;
-  transition: opacity 0.15s;
   display: flex;
   align-items: center;
-  padding: 2px;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--borderColor-default, #30363d);
+  border-radius: 6px;
+  background: var(--bgColor-default, #0d1117);
+  color: var(--fgColor-muted, #7d8590);
+  cursor: pointer;
 }
 .pin-btn:hover {
-  opacity: 0.8;
+  background: var(--bgColor-muted, #161b22);
+  border-color: var(--borderColor-muted, #8b949e);
+  color: var(--fgColor-default, #e6edf3);
 }
 .pin-btn.pinned {
-  opacity: 0.7;
   color: var(--fgColor-accent, #58a6ff);
+  border-color: var(--fgColor-accent, #58a6ff);
 }
 .pin-btn.pinned:hover {
-  opacity: 1;
+  background: var(--bgColor-muted, #161b22);
 }
 </style>
