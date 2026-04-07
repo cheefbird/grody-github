@@ -1,21 +1,12 @@
 <script lang="ts">
 import RelativeTime from "@/lib/components/RelativeTime.svelte";
 import StatusDot from "@/lib/components/StatusDot.svelte";
-import type { RepoDeployment } from "@/lib/deployment-types";
+import { type RepoDeployment, STATE_COLORS } from "@/lib/deployment-types";
 
 let { deployment, owner }: { deployment: RepoDeployment; owner: string } =
   $props();
 
-const borderColorMap: Record<string, string> = {
-  success: "var(--fgColor-success, #3fb950)",
-  failure: "var(--fgColor-danger, #da3633)",
-  error: "var(--fgColor-danger, #da3633)",
-  in_progress: "var(--fgColor-attention, #d29922)",
-};
-
-let borderColor = $derived(
-  borderColorMap[deployment.state] ?? "var(--fgColor-muted, #7d8590)",
-);
+let borderColor = $derived(STATE_COLORS[deployment.state]);
 </script>
 
 <a

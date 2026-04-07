@@ -94,39 +94,25 @@ function createNavItem(org: string): HTMLElement {
   return li;
 }
 
-function setActiveNav(pane: Element, isDeployments: boolean) {
-  const depsLink = pane.querySelector<HTMLAnchorElement>(
-    'a[href*="/insights/dependencies"]',
-  );
-  const depsLi = depsLink?.closest("li");
-  const deploymentsLink = pane.querySelector<HTMLAnchorElement>(
-    'a[href*="view=deployments"]',
-  );
-  const deploymentsLi = deploymentsLink?.closest("li");
+function setNavItemActive(link: Element | null, active: boolean) {
+  link?.setAttribute("aria-current", active ? "true" : "false");
+  const li = link?.closest("li");
+  if (active) {
+    li?.setAttribute("data-active", "true");
+  } else {
+    li?.removeAttribute("data-active");
+  }
+}
 
-  if (depsLink) {
-    depsLink.setAttribute("aria-current", isDeployments ? "false" : "true");
-  }
-  if (depsLi) {
-    if (isDeployments) {
-      depsLi.removeAttribute("data-active");
-    } else {
-      depsLi.setAttribute("data-active", "true");
-    }
-  }
-  if (deploymentsLink) {
-    deploymentsLink.setAttribute(
-      "aria-current",
-      isDeployments ? "true" : "false",
-    );
-  }
-  if (deploymentsLi) {
-    if (isDeployments) {
-      deploymentsLi.setAttribute("data-active", "true");
-    } else {
-      deploymentsLi.removeAttribute("data-active");
-    }
-  }
+function setActiveNav(pane: Element, isDeployments: boolean) {
+  setNavItemActive(
+    pane.querySelector('a[href*="/insights/dependencies"]'),
+    !isDeployments,
+  );
+  setNavItemActive(
+    pane.querySelector('a[href*="view=deployments"]'),
+    isDeployments,
+  );
 }
 
 const definition: FeatureDefinition = {
@@ -143,14 +129,13 @@ const definition: FeatureDefinition = {
     );
     if (!existingNav) return;
 
-    const maybeSidebar = existingNav.closest<HTMLElement>(SIDEBAR_SELECTOR);
-    if (!maybeSidebar) return;
-    const sidebarPane: HTMLElement = maybeSidebar;
-
-    const maybeContent = document.querySelector<HTMLElement>(CONTENT_SELECTOR);
-    if (!maybeContent) return;
-    const content: HTMLElement = maybeContent;
-
+    // Re-bind after null guards — TS doesn't narrow across function boundaries
+    const pane = existingNav.closest<HTMLElement>(SIDEBAR_SELECTOR);
+    if (!pane) return;
+    const sidebarPane: HTMLElement = pane;
+    const contentEl = document.querySelector<HTMLElement>(CONTENT_SELECTOR);
+    if (!contentEl) return;
+    const content: HTMLElement = contentEl;
     const orgName: string = org;
 
     function injectNavIfMissing() {
