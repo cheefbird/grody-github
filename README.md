@@ -27,6 +27,15 @@ Adds a search box to the Actions sidebar so you can actually find your workflows
 - Works with dark theme
 - Handles repos with hundreds of workflows without breaking a sweat
 
+### Org Deployments Dashboard
+
+See deployment status across every repo in an org, all in one place. Lives on the org insights page as a new sidebar tab.
+
+- Groups deployments by environment with color-coded status
+- Pin your most-used environments to the top
+- Search and manual refresh with cache-first loading
+- Requires a token with Deployments (read) and Metadata (read) permissions
+
 ## Optional Features
 
 Optional features are opt-in only. You've gotta go to the options to turn it on.
@@ -63,7 +72,7 @@ Then in Chrome:
 1. Click the Grody GitHub extension icon
 2. Hit **Options**
 3. Paste a [GitHub Personal Access Token](https://github.com/settings/tokens) (optional — only needed for rate limits or private repos)
-   - **Fine-grained token**: Actions (read) permission on the repos you need
+   - **Fine-grained token**: Actions (read) on the repos you need. Org Deployments also needs Deployments (read) and Metadata (read).
    - **Classic token**: `repo` scope
    - No token or scopes needed for public repos only
 4. Token gets validated on save — the popup turns green when you're connected
@@ -74,8 +83,8 @@ Then in Chrome:
 pnpm dev            # Dev server with hot reload (Chrome)
 pnpm dev:firefox    # Dev server (Firefox)
 pnpm format         # Biome formatter
-pnpm lint           # Biome linter
-pnpm biocheck       # Biome check (format + lint)
+pnpm lint           # Biome check (format + lint)
+pnpm test           # Run tests
 pnpm check          # Svelte type checking
 ```
 
