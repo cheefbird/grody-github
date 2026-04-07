@@ -322,9 +322,9 @@ describe("fetchOrgDeployments", () => {
     );
 
     const result = await fetchOrgDeployments("my-org", "ghp_token");
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("production");
-    expect(result[0].deployments[0].repoName).toBe("api");
+    expect(result.groups).toHaveLength(1);
+    expect(result.groups[0].name).toBe("production");
+    expect(result.groups[0].deployments[0].repoName).toBe("api");
   });
 
   it("paginates through multiple pages of repos", async () => {
@@ -377,7 +377,7 @@ describe("fetchOrgDeployments", () => {
 
     const result = await fetchOrgDeployments("my-org", "ghp_token");
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    const prod = result.find((g) => g.name === "prod");
+    const prod = result.groups.find((g) => g.name === "prod");
     expect(prod?.deployments).toHaveLength(2);
   });
 

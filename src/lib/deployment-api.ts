@@ -129,13 +129,19 @@ query OrgDeployments($org: String!, $cursor: String) {
 
 const MAX_REPO_PAGES = 10;
 
+type FetchResult = {
+  groups: EnvironmentGroup[];
+  truncated: boolean;
+};
+
 export async function fetchOrgDeployments(
   org: string,
   token: string,
-): Promise<EnvironmentGroup[]> {
+): Promise<FetchResult> {
   const allRepos: GqlRepoNode[] = [];
   let cursor: string | null = null;
   let page = 0;
+  let truncated = false;
 
   type GqlPageInfo = { hasNextPage: boolean; endCursor: string | null };
   type GqlRepositories = { nodes: GqlRepoNode[]; pageInfo: GqlPageInfo };
@@ -176,7 +182,11 @@ export async function fetchOrgDeployments(
     cursor = repos.pageInfo.endCursor;
   }
 
-  return transformDeploymentData(allRepos);
+  if (page >= MAX_REPO_PAGES && cursor !== null) {
+    truncated = true;
+  }
+
+  return { groups: transformDeploymentData(allRepos), truncated };
 }
 
 export async function getOrgDeployments(
@@ -184,14 +194,18 @@ export async function getOrgDeployments(
   force = false,
 ): Promise<DeploymentResult> {
   try {
+    const token = (await tokenStorage.getValue()) || null;
+    const tokenPrefix = token ? token.slice(0, 8) : undefined;
+
     if (!force) {
       try {
-        const cached = await getCachedDeployments(org);
+        const cached = await getCachedDeployments(org, tokenPrefix);
         if (cached) {
           return {
             ok: true,
             groups: cached.groups,
             timestamp: cached.timestamp,
+            truncated: false,
           };
         }
       } catch {
@@ -199,18 +213,17 @@ export async function getOrgDeployments(
       }
     }
 
-    const token = (await tokenStorage.getValue()) || null;
     if (!token) {
       return { ok: false, reason: "auth-required" };
     }
 
-    const groups = await fetchOrgDeployments(org, token);
+    const { groups, truncated } = await fetchOrgDeployments(org, token);
     try {
-      await setCachedDeployments(org, groups);
+      await setCachedDeployments(org, groups, tokenPrefix);
     } catch (cacheErr) {
       console.warn("[grody-github] Failed to cache deployments:", cacheErr);
     }
-    return { ok: true, groups, timestamp: Date.now() };
+    return { ok: true, groups, timestamp: Date.now(), truncated };
   } catch (err) {
     console.error("[grody-github] Failed to fetch deployments:", err);
     if (err instanceof GitHubApiError) {

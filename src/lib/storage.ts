@@ -40,22 +40,27 @@ export function deploymentCacheKey(org: string) {
 
 export async function getCachedDeployments(
   org: string,
+  tokenPrefix?: string,
 ): Promise<DeploymentCache | null> {
   const cached = await storage.getItem<DeploymentCache>(
     deploymentCacheKey(org),
   );
   if (!cached) return null;
   if (Date.now() - cached.timestamp > DEPLOYMENT_CACHE_TTL_MS) return null;
+  if (tokenPrefix && cached.tokenPrefix && cached.tokenPrefix !== tokenPrefix)
+    return null;
   return cached;
 }
 
 export async function setCachedDeployments(
   org: string,
   groups: EnvironmentGroup[],
+  tokenPrefix?: string,
 ): Promise<void> {
   await storage.setItem<DeploymentCache>(deploymentCacheKey(org), {
     groups,
     timestamp: Date.now(),
+    tokenPrefix,
   });
 }
 

@@ -26,10 +26,16 @@ export type EnvironmentGroup = {
 export type DeploymentCache = {
   groups: EnvironmentGroup[];
   timestamp: number;
+  tokenPrefix?: string;
 };
 
 export type DeploymentResult =
-  | { ok: true; groups: EnvironmentGroup[]; timestamp: number }
+  | {
+      ok: true;
+      groups: EnvironmentGroup[];
+      timestamp: number;
+      truncated: boolean;
+    }
   | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
 
 export const STATE_COLORS: Record<DeploymentState, string> = {
