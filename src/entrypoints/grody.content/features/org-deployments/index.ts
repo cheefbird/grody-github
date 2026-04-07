@@ -14,7 +14,7 @@ function parseOrg(): string | null {
 }
 
 function isDeploymentsUrl(): boolean {
-  return location.pathname.includes("/insights/deployments");
+  return new URLSearchParams(location.search).get("view") === "deployments";
 }
 
 const ROCKET_ICON_PATH =
@@ -54,7 +54,7 @@ function createNavItem(org: string): HTMLElement {
   }
 
   const a = document.createElement("a");
-  a.href = `/orgs/${org}/insights/deployments`;
+  a.href = `/orgs/${org}/insights/dependencies?view=deployments`;
   if (existingLink) {
     a.className = existingLink.className;
   }
@@ -100,7 +100,7 @@ function setActiveNav(pane: Element, isDeployments: boolean) {
   );
   const depsLi = depsLink?.closest("li");
   const deploymentsLink = pane.querySelector<HTMLAnchorElement>(
-    'a[href*="/insights/deployments"]',
+    'a[href*="view=deployments"]',
   );
   const deploymentsLi = deploymentsLink?.closest("li");
 
@@ -137,33 +137,55 @@ const definition: FeatureDefinition = {
     const org = parseOrg();
     if (!org) return;
 
-    const pane = await waitForElement<HTMLElement>(SIDEBAR_SELECTOR, signal);
-    if (!pane) return;
+    const existingNav = await waitForElement<HTMLElement>(
+      NAV_ITEM_SELECTOR,
+      signal,
+    );
+    if (!existingNav) return;
 
-    const content = document.querySelector<HTMLElement>(CONTENT_SELECTOR);
-    if (!content) return;
+    const maybeSidebar = existingNav.closest<HTMLElement>(SIDEBAR_SELECTOR);
+    if (!maybeSidebar) return;
+    const sidebarPane: HTMLElement = maybeSidebar;
 
-    if (!pane.querySelector("[data-grody-deployments-nav]")) {
-      const existingNavItem = pane.querySelector(NAV_ITEM_SELECTOR);
-      const navItem = createNavItem(org);
+    const maybeContent = document.querySelector<HTMLElement>(CONTENT_SELECTOR);
+    if (!maybeContent) return;
+    const content: HTMLElement = maybeContent;
 
-      if (existingNavItem?.closest("li")) {
-        existingNavItem.closest("li")?.after(navItem);
-      }
+    const orgName: string = org;
+
+    function injectNavIfMissing() {
+      if (sidebarPane.querySelector("[data-grody-deployments-nav]")) return;
+      const anchor = sidebarPane.querySelector(NAV_ITEM_SELECTOR);
+      if (!anchor) return;
+
+      const navItem = createNavItem(orgName);
+      anchor.closest("li")?.after(navItem);
 
       navItem.addEventListener("click", (e) => {
         e.preventDefault();
-        history.pushState(null, "", `/orgs/${org}/insights/deployments`);
+        const url = new URL(location.href);
+        url.pathname = `/orgs/${orgName}/insights/dependencies`;
+        url.searchParams.set("view", "deployments");
+        history.pushState(null, "", url.toString());
         window.dispatchEvent(new PopStateEvent("popstate"));
       });
+
+      setActiveNav(sidebarPane, isDeploymentsUrl());
     }
 
+    injectNavIfMissing();
+
+    // Re-inject after React hydration wipes the sidebar
+    const sidebarObserver = new MutationObserver(() => injectNavIfMissing());
+    sidebarObserver.observe(sidebarPane, { childList: true, subtree: true });
+    signal.addEventListener("abort", () => sidebarObserver.disconnect());
+
     if (!isDeploymentsUrl()) {
-      setActiveNav(pane, false);
+      setActiveNav(sidebarPane, false);
       return;
     }
 
-    setActiveNav(pane, true);
+    setActiveNav(sidebarPane, true);
 
     const originalChildren = [...content.childNodes].map((n) =>
       n.cloneNode(true),
@@ -175,7 +197,7 @@ const definition: FeatureDefinition = {
 
     let app: ReturnType<typeof mount> | null = mount(OrgDeployments, {
       target: container,
-      props: { org },
+      props: { org: orgName },
     });
 
     signal.addEventListener("abort", () => {
@@ -184,7 +206,6 @@ const definition: FeatureDefinition = {
         app = null;
       }
       content.replaceChildren(...originalChildren);
-      pane.querySelector("[data-grody-deployments-nav]")?.remove();
     });
   },
 };
