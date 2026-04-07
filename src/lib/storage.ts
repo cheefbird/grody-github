@@ -1,3 +1,4 @@
+import type { DeploymentCache, EnvironmentGroup } from "./deployment-types";
 import type { WorkflowCache } from "./types";
 
 export const tokenStorage = storage.defineItem<string>("local:github-pat", {
@@ -27,6 +28,33 @@ export async function setCachedWorkflows(
 ): Promise<void> {
   await storage.setItem<WorkflowCache>(cacheKey(owner, repo), {
     workflows,
+    timestamp: Date.now(),
+  });
+}
+
+const DEPLOYMENT_CACHE_TTL_MS = 5 * 60 * 1000;
+
+export function deploymentCacheKey(org: string) {
+  return `local:deployment-cache:${org}` as `local:${string}`;
+}
+
+export async function getCachedDeployments(
+  org: string,
+): Promise<DeploymentCache | null> {
+  const cached = await storage.getItem<DeploymentCache>(
+    deploymentCacheKey(org),
+  );
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > DEPLOYMENT_CACHE_TTL_MS) return null;
+  return cached;
+}
+
+export async function setCachedDeployments(
+  org: string,
+  groups: EnvironmentGroup[],
+): Promise<void> {
+  await storage.setItem<DeploymentCache>(deploymentCacheKey(org), {
+    groups,
     timestamp: Date.now(),
   });
 }

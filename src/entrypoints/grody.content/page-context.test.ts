@@ -4,6 +4,7 @@ import {
   buildPageContext,
   isActionsPage,
   isIssuePage,
+  isOrgInsightsPage,
   isPRPage,
   isRepoPage,
 } from "./page-context";
@@ -110,5 +111,39 @@ describe("isIssuePage", () => {
 
   it("does not match issues list", () => {
     expect(isIssuePage(ctx("/owner/repo/issues"))).toBe(false);
+  });
+});
+
+describe("isOrgInsightsPage", () => {
+  it("matches /orgs/my-org/insights", () => {
+    expect(isOrgInsightsPage(ctx("/orgs/my-org/insights"))).toBe(true);
+  });
+
+  it("matches /orgs/my-org/insights/", () => {
+    expect(isOrgInsightsPage(ctx("/orgs/my-org/insights/"))).toBe(true);
+  });
+
+  it("matches /orgs/my-org/insights/dependencies", () => {
+    expect(isOrgInsightsPage(ctx("/orgs/my-org/insights/dependencies"))).toBe(
+      true,
+    );
+  });
+
+  it("matches /orgs/my-org/insights/deployments", () => {
+    expect(isOrgInsightsPage(ctx("/orgs/my-org/insights/deployments"))).toBe(
+      true,
+    );
+  });
+
+  it("does not match /orgs/my-org/repositories", () => {
+    expect(isOrgInsightsPage(ctx("/orgs/my-org/repositories"))).toBe(false);
+  });
+
+  it("does not match /owner/repo/insights", () => {
+    expect(isOrgInsightsPage(ctx("/owner/repo/insights"))).toBe(false);
+  });
+
+  it("does not match /orgs", () => {
+    expect(isOrgInsightsPage(ctx("/orgs"))).toBe(false);
   });
 });
