@@ -12,7 +12,6 @@ import {
   tokenStorage,
 } from "./storage";
 
-// Raw GraphQL response shapes
 export type GqlDeploymentNode = {
   environment: string;
   latestStatus: { state: string } | null;

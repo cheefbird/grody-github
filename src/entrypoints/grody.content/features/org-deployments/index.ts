@@ -61,13 +61,11 @@ function createNavItem(org: string): HTMLElement {
   a.setAttribute("data-size", "medium");
   a.style.setProperty("--subitem-depth", "0");
 
-  // Spacer (matches Dependencies structure)
   const spacer = document.createElement("span");
   const existingSpacer = existingLink?.querySelector('[class*="Spacer"]');
   if (existingSpacer) spacer.className = existingSpacer.className;
   a.appendChild(spacer);
 
-  // Leading visual with rocket icon
   const visualWrap = document.createElement("span");
   const existingVisual = existingLink?.querySelector(
     '[class*="LeadingVisual"]',
@@ -76,7 +74,6 @@ function createNavItem(org: string): HTMLElement {
   visualWrap.appendChild(createRocketIcon());
   a.appendChild(visualWrap);
 
-  // SubContent wrapper > Label (matches Dependencies structure)
   const subContent = document.createElement("span");
   const existingSubContent = existingLink?.querySelector(
     '[class*="SubContent"]',
