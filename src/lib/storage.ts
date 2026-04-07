@@ -58,3 +58,20 @@ export async function setCachedDeployments(
     timestamp: Date.now(),
   });
 }
+
+export function pinnedEnvsKey(org: string) {
+  return `local:pinned-envs:${org}` as `local:${string}`;
+}
+
+export async function getPinnedEnvironments(
+  org: string,
+): Promise<string[] | null> {
+  return storage.getItem<string[]>(pinnedEnvsKey(org));
+}
+
+export async function setPinnedEnvironments(
+  org: string,
+  names: string[],
+): Promise<void> {
+  await storage.setItem<string[]>(pinnedEnvsKey(org), names);
+}

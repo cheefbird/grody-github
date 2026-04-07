@@ -10,6 +10,7 @@ export type GetWorkflowsMessage = {
 export type GetOrgDeploymentsMessage = {
   type: "GET_ORG_DEPLOYMENTS";
   org: string;
+  force?: boolean;
 };
 
 export type ExtensionMessage = GetWorkflowsMessage | GetOrgDeploymentsMessage;

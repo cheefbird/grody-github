@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEnvColor, shouldExpandByDefault } from "./utils";
+import { autoDetectPins, getEnvColor, shouldExpandByDefault } from "./utils";
 
 describe("shouldExpandByDefault", () => {
   it("expands 'production'", () => {
@@ -52,5 +52,42 @@ describe("getEnvColor", () => {
 
   it("returns different colors for different indices", () => {
     expect(getEnvColor(0)).not.toBe(getEnvColor(1));
+  });
+});
+
+describe("autoDetectPins", () => {
+  it("pins exact matches from default list", () => {
+    const envNames = ["dev", "staging", "prod", "canary", "qa"];
+    expect(autoDetectPins(envNames)).toEqual(["dev", "staging", "prod"]);
+  });
+
+  it("does not pin substring matches", () => {
+    const envNames = [
+      "dev-c1-canary",
+      "devops-phoenix",
+      "prod-au",
+      "production",
+    ];
+    expect(autoDetectPins(envNames)).toEqual(["production"]);
+  });
+
+  it("pins 'stg' as an exact match", () => {
+    const envNames = ["stg", "stg-us-east"];
+    expect(autoDetectPins(envNames)).toEqual(["stg"]);
+  });
+
+  it("returns empty array when no matches", () => {
+    const envNames = ["canary", "qa", "preview", "ecr/_global"];
+    expect(autoDetectPins(envNames)).toEqual([]);
+  });
+
+  it("preserves input order", () => {
+    const envNames = ["prod", "dev", "staging"];
+    expect(autoDetectPins(envNames)).toEqual(["prod", "dev", "staging"]);
+  });
+
+  it("is case-sensitive", () => {
+    const envNames = ["Dev", "STAGING", "Prod"];
+    expect(autoDetectPins(envNames)).toEqual([]);
   });
 });

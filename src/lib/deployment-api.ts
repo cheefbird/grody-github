@@ -109,7 +109,7 @@ query OrgDeployments($org: String!, $cursor: String) {
     repositories(first: 100, isArchived: false, after: $cursor) {
       nodes {
         name
-        deployments(first: 10, orderBy: { field: CREATED_AT, direction: DESC }) {
+        deployments(first: 30, orderBy: { field: CREATED_AT, direction: DESC }) {
           nodes {
             environment
             latestStatus { state }
@@ -182,11 +182,14 @@ export async function fetchOrgDeployments(
 
 export async function getOrgDeployments(
   org: string,
+  force = false,
 ): Promise<DeploymentResult> {
   try {
-    const cached = await getCachedDeployments(org);
-    if (cached) {
-      return { ok: true, groups: cached.groups, timestamp: cached.timestamp };
+    if (!force) {
+      const cached = await getCachedDeployments(org);
+      if (cached) {
+        return { ok: true, groups: cached.groups, timestamp: cached.timestamp };
+      }
     }
 
     const token = (await tokenStorage.getValue()) || null;
@@ -211,10 +214,12 @@ export async function getOrgDeployments(
 
 export async function requestOrgDeployments(
   org: string,
+  force = false,
 ): Promise<DeploymentResult> {
   const message: GetOrgDeploymentsMessage = {
     type: "GET_ORG_DEPLOYMENTS",
     org,
+    force,
   };
   return browser.runtime.sendMessage(message);
 }

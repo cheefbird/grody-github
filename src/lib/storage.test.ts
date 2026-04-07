@@ -6,8 +6,10 @@ import {
   deploymentCacheKey,
   getCachedDeployments,
   getCachedWorkflows,
+  getPinnedEnvironments,
   setCachedDeployments,
   setCachedWorkflows,
+  setPinnedEnvironments,
 } from "./storage";
 
 describe("cacheKey", () => {
@@ -112,5 +114,29 @@ describe("getCachedDeployments", () => {
 
   it("returns null when no cache exists", async () => {
     expect(await getCachedDeployments("my-org")).toBeNull();
+  });
+});
+
+describe("getPinnedEnvironments", () => {
+  beforeEach(() => {
+    fakeBrowser.reset();
+    vi.restoreAllMocks();
+  });
+
+  it("returns null when no pins exist", async () => {
+    expect(await getPinnedEnvironments("my-org")).toBeNull();
+  });
+
+  it("returns saved pin list", async () => {
+    await setPinnedEnvironments("my-org", ["dev", "staging", "prod"]);
+    const result = await getPinnedEnvironments("my-org");
+    expect(result).toEqual(["dev", "staging", "prod"]);
+  });
+
+  it("stores pins independently per org", async () => {
+    await setPinnedEnvironments("org-a", ["dev"]);
+    await setPinnedEnvironments("org-b", ["prod"]);
+    expect(await getPinnedEnvironments("org-a")).toEqual(["dev"]);
+    expect(await getPinnedEnvironments("org-b")).toEqual(["prod"]);
   });
 });

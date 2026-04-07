@@ -50,7 +50,7 @@ export default defineBackground(() => {
         return true;
       }
       if (message.type === "GET_ORG_DEPLOYMENTS") {
-        getOrgDeployments(message.org).then(sendResponse);
+        getOrgDeployments(message.org, message.force).then(sendResponse);
         return true;
       }
     },

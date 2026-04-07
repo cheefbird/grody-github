@@ -8,11 +8,15 @@ let {
   owner,
   expanded = $bindable(true),
   accentColor,
+  pinned = false,
+  onTogglePin,
 }: {
   group: EnvironmentGroup;
   owner: string;
   expanded: boolean;
   accentColor: string;
+  pinned?: boolean;
+  onTogglePin?: (envName: string) => void;
 } = $props();
 
 const failedCount = $derived(
@@ -22,6 +26,11 @@ const failedCount = $derived(
 const inProgressCount = $derived(
   group.deployments.filter((d) => d.state === "in_progress").length,
 );
+
+function handlePinClick(e: Event) {
+  e.stopPropagation();
+  onTogglePin?.(group.name);
+}
 </script>
 
 <CollapsibleCard bind:expanded {accentColor}>
@@ -35,6 +44,20 @@ const inProgressCount = $derived(
     {:else}
       <span class="Label Label--success ml-auto">all healthy</span>
     {/if}
+    <button
+      type="button"
+      class="pin-btn"
+      class:pinned
+      onclick={handlePinClick}
+      aria-label={pinned ? "Unpin environment" : "Pin environment"}
+    >
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <title>{pinned ? "Unpin" : "Pin"}</title>
+        <path
+          d="M4.456.734a1.75 1.75 0 012.826.504l.613 1.327a3.08 3.08 0 002.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.75.75 0 11-1.06 1.06L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.08 3.08 0 00-1.707-2.084l-1.327-.613a1.75 1.75 0 01-.504-2.826z"
+        />
+      </svg>
+    </button>
   {/snippet}
   <div class="repo-grid">
     {#each group.deployments as deployment (deployment.repoName)}
@@ -53,5 +76,26 @@ const inProgressCount = $derived(
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 6px;
+}
+
+.pin-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--fgColor-muted, #7d8590);
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+.pin-btn:hover {
+  opacity: 0.8;
+}
+.pin-btn.pinned {
+  opacity: 0.7;
+  color: var(--fgColor-accent, #58a6ff);
+}
+.pin-btn.pinned:hover {
+  opacity: 1;
 }
 </style>

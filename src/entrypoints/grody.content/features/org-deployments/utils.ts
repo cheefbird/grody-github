@@ -18,3 +18,15 @@ const EXPANDED_PATTERNS = [/dev/i, /staging/i, /stg/i, /prod/i];
 export function shouldExpandByDefault(envName: string): boolean {
   return EXPANDED_PATTERNS.some((p) => p.test(envName));
 }
+
+const DEFAULT_PINNED_NAMES = new Set([
+  "dev",
+  "staging",
+  "stg",
+  "prod",
+  "production",
+]);
+
+export function autoDetectPins(envNames: string[]): string[] {
+  return envNames.filter((name) => DEFAULT_PINNED_NAMES.has(name));
+}
