@@ -150,7 +150,9 @@ async function handleSave() {
     <ul class="scope-list">
       <li>
         <strong>Fine-grained token</strong>: grant
-        <strong>Actions (read)</strong>
+        <strong>Actions (read)</strong>,
+        <strong>Deployments (read)</strong>, and
+        <strong>Metadata (read)</strong>
         on the repos you need. No permissions needed for public repos.
       </li>
       <li>
