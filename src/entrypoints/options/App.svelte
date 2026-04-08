@@ -8,6 +8,14 @@ let status = $state<"idle" | "saving" | "success" | "error">("idle");
 let statusMessage = $state("");
 let loaded = $state(false);
 let showTokenHelp = $state(false);
+let savedFlash = $state<string | null>(null);
+
+function flash(id: string) {
+  savedFlash = null;
+  requestAnimationFrame(() => {
+    savedFlash = id;
+  });
+}
 
 function stripNonASCII(raw: string): string {
   return raw.replace(/[^\x20-\x7E]/g, "").trim();
@@ -55,22 +63,18 @@ async function validateToken(pat: string): Promise<boolean> {
   return response.ok;
 }
 
-async function handleStatusToggle() {
-  statusEnabled = !statusEnabled;
-  try {
-    await enabledStorage.setValue(statusEnabled);
-  } catch {
-    statusEnabled = !statusEnabled;
-  }
-}
-
-async function handleDeploymentsToggle() {
-  deploymentsEnabled = !deploymentsEnabled;
-  try {
-    await deploymentsEnabledStorage.setValue(deploymentsEnabled);
-  } catch {
-    deploymentsEnabled = !deploymentsEnabled;
-  }
+function toggleSetting(
+  get: () => boolean,
+  set: (v: boolean) => void,
+  store: { setValue: (v: boolean) => Promise<void> },
+  flashId: string,
+) {
+  const next = !get();
+  set(next);
+  store
+    .setValue(next)
+    .then(() => flash(flashId))
+    .catch(() => set(!next));
 }
 
 async function handleIntervalChange(event: Event) {
@@ -79,6 +83,7 @@ async function handleIntervalChange(event: Event) {
   pollInterval = value;
   try {
     await pollIntervalStorage.setValue(value);
+    flash("interval");
   } catch {
     pollInterval = prev;
   }
@@ -188,51 +193,61 @@ async function handleSave() {
     </button>
 
     {#if status === "success"}
-      <span role="status" class="msg success">{statusMessage || "Saved"}</span>
+      <span role="status" class="msg saved-flash"
+        >{statusMessage || "Saved"}</span
+      >
     {/if}
     {#if status === "error"}
       <span role="alert" class="msg error">Error: {statusMessage}</span>
     {/if}
   </form>
 
-  <hr
-    style="margin:1rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
-  >
+  <hr>
 
   <h2>Org Deployments Dashboard</h2>
   <p>View deployment status across all repos in an organization.</p>
 
-  <div
-    style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"
-  >
-    <label for="deployments-enabled" style="margin:0;">Enabled</label>
+  <div class="toggle-row">
+    <label for="deployments-enabled">Enabled</label>
     <input
       id="deployments-enabled"
       type="checkbox"
       checked={deploymentsEnabled}
-      onchange={handleDeploymentsToggle}
+      onchange={() => toggleSetting(() => deploymentsEnabled, v => deploymentsEnabled = v, deploymentsEnabledStorage, "deployments")}
     >
+    {#if savedFlash === "deployments"}
+      <span
+        class="saved-flash"
+        role="status"
+        onanimationend={() => savedFlash = null}
+        >Saved</span
+      >
+    {/if}
   </div>
 
   <p class="hint">Requires a token — see permission details above.</p>
 
-  <hr
-    style="margin:1rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
-  >
+  <hr>
 
   <h2>GitHub Status Notifications</h2>
   <p>Show a banner on GitHub pages when there's an active incident.</p>
 
-  <div
-    style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"
-  >
-    <label for="status-enabled" style="margin:0;">Enabled</label>
+  <div class="toggle-row">
+    <label for="status-enabled">Enabled</label>
     <input
       id="status-enabled"
       type="checkbox"
       checked={statusEnabled}
-      onchange={handleStatusToggle}
+      onchange={() => toggleSetting(() => statusEnabled, v => statusEnabled = v, enabledStorage, "status")}
     >
+    {#if savedFlash === "status"}
+      <span
+        class="saved-flash"
+        role="status"
+        onanimationend={() => savedFlash = null}
+        >Saved</span
+      >
+    {/if}
   </div>
 
   <label for="poll-interval">Check for incidents every</label>
@@ -241,12 +256,19 @@ async function handleSave() {
     value={pollInterval}
     onchange={handleIntervalChange}
     disabled={!statusEnabled}
-    style="padding:0.3rem 0.5rem;font-size:0.85rem;border:1px solid light-dark(#d0d7de, #30363d);border-radius:6px;background:light-dark(#ffffff, #161b22);color:light-dark(#24292f, #e6edf3);"
   >
     {#each POLL_OPTIONS as opt}
       <option value={opt}>{opt} {opt === 1 ? "minute" : "minutes"}</option>
     {/each}
   </select>
+  {#if savedFlash === "interval"}
+    <span
+      class="saved-flash"
+      role="status"
+      onanimationend={() => savedFlash = null}
+      >Saved</span
+    >
+  {/if}
 </main>
 
 <style>
@@ -286,21 +308,37 @@ p {
 }
 .hint {
   font-size: 0.8rem;
-  color: light-dark(#656d76, #8b949e);
 }
 .hint a {
   color: light-dark(#0969da, #58a6ff);
 }
-input {
-  width: 100%;
+hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid light-dark(#d0d7de, #30363d);
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.toggle-row label {
+  margin: 0;
+}
+input,
+select {
   padding: 0.4rem 0.5rem;
   font-size: 0.85rem;
   border: 1px solid light-dark(#d0d7de, #30363d);
   border-radius: 6px;
-  margin-bottom: 0.5rem;
-  box-sizing: border-box;
   background: light-dark(#ffffff, #161b22);
   color: light-dark(#24292f, #e6edf3);
+}
+input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
 }
 input[type="checkbox"] {
   width: auto;
@@ -327,9 +365,6 @@ button:disabled {
   margin-left: 0.75rem;
   font-size: 0.85rem;
 }
-.success {
-  color: light-dark(#1a7f37, #3fb950);
-}
 .error {
   color: light-dark(#cf222e, #f85149);
 }
@@ -343,6 +378,20 @@ select {
 select:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.saved-flash {
+  font-size: 0.8rem;
+  color: light-dark(#1a7f37, #3fb950);
+  animation: fade-out 1.5s ease-out forwards;
+}
+@keyframes fade-out {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 .link-btn {
   background: none;
