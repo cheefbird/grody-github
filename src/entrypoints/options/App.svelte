@@ -141,17 +141,13 @@ async function handleSave() {
 </script>
 
 <main>
-  <h1>Grody GitHub Options</h1>
   {#if connected}
     <p class="connected">Connected</p>
   {/if}
 
-  <label for="pat"
-    >GitHub Personal Access Token (optional but recommended)</label
-  >
+  <h2><label for="pat">GitHub Personal Access Token</label></h2>
   <p>
-    Without a token, you're limited to public repos. Add one to enable
-    everything.
+    Optional but recommended. Without a token, you're limited to public repos.
     <button
       type="button"
       class="link-btn"
@@ -200,7 +196,7 @@ async function handleSave() {
   </form>
 
   <hr
-    style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
+    style="margin:1rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
   >
 
   <h2>Org Deployments Dashboard</h2>
@@ -221,7 +217,7 @@ async function handleSave() {
   <p class="hint">Requires a token — see permission details above.</p>
 
   <hr
-    style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
+    style="margin:1rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
   >
 
   <h2>GitHub Status Notifications</h2>
@@ -256,7 +252,7 @@ async function handleSave() {
 <style>
 main {
   max-width: 420px;
-  margin: 1rem auto;
+  margin: 0.5rem auto;
   padding: 0 1rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 0.85rem;
@@ -265,14 +261,13 @@ main {
   color: light-dark(#24292f, #e6edf3);
   background: transparent;
 }
-h1 {
-  font-size: 1.15rem;
-  margin: 0 0 0.75rem;
-}
 label {
-  display: block;
   font-weight: 600;
   margin-bottom: 0.25rem;
+}
+h2 > label {
+  font: inherit;
+  margin: 0;
 }
 p {
   color: light-dark(#656d76, #8b949e);
@@ -340,7 +335,7 @@ button:disabled {
 }
 h2 {
   font-size: 1rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.25rem;
 }
 select {
   cursor: pointer;
