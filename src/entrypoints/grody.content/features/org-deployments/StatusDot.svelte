@@ -1,5 +1,6 @@
 <script lang="ts">
-import { type DeploymentState, STATE_COLORS } from "@/lib/deployment-types";
+import type { DeploymentState } from "@/lib/deployment-types";
+import { STATE_COLORS } from "./utils";
 
 let { state }: { state: DeploymentState } = $props();
 

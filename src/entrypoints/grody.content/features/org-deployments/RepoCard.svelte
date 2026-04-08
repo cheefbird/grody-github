@@ -1,7 +1,8 @@
 <script lang="ts">
-import { type RepoDeployment, STATE_COLORS } from "@/lib/deployment-types";
+import type { RepoDeployment } from "@/lib/deployment-types";
 import RelativeTime from "./RelativeTime.svelte";
 import StatusDot from "./StatusDot.svelte";
+import { STATE_COLORS } from "./utils";
 
 let { deployment, owner }: { deployment: RepoDeployment; owner: string } =
   $props();
