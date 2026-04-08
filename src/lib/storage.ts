@@ -1,6 +1,11 @@
 import type { DeploymentCache, EnvironmentGroup } from "./deployment-types";
 import type { WorkflowCache } from "./types";
 
+export const deploymentsEnabledStorage = storage.defineItem<boolean>(
+  "local:org-deployments:enabled",
+  { fallback: true },
+);
+
 export const tokenStorage = storage.defineItem<string>("local:github-pat", {
   fallback: "",
 });

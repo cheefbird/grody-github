@@ -1,8 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { enabledStorage, pollIntervalStorage } from "@/lib/github-status";
-import { deploymentsEnabledStorage } from "@/lib/org-deployments-storage";
-import { tokenStorage } from "@/lib/storage";
+import { deploymentsEnabledStorage, tokenStorage } from "@/lib/storage";
 
 let token = $state("");
 let status = $state<"idle" | "saving" | "success" | "error">("idle");

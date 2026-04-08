@@ -1,7 +1,7 @@
 import { mount, unmount } from "svelte";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
-import { deploymentsEnabledStorage } from "@/lib/org-deployments-storage";
+import { deploymentsEnabledStorage } from "@/lib/storage";
 import { isOrgInsightsPage } from "../../page-context";
 import OrgDeployments from "./OrgDeployments.svelte";
 
