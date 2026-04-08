@@ -149,7 +149,8 @@ async function handleSave() {
 
   <label for="pat">GitHub Personal Access Token (optional)</label>
   <p>
-    Add a token to avoid rate limits or filter workflows in private repos.
+    Without a token, you're limited to public repos. Add one to unlock
+    everything.
     <button
       type="button"
       class="link-btn"
@@ -161,25 +162,25 @@ async function handleSave() {
   {#if showTokenHelp}
     <ul class="scope-list">
       <li>
-        <strong>Fine-grained token</strong>: grant
-        <strong>Actions (read)</strong>
-        on the repos you need. No permissions needed for public repos.
+        <strong>Fine-grained</strong>
+        (recommended): scope to just the repos you need
+        <ul>
+          <li>Actions (read) for workflow status</li>
+          <li>Deployments + Metadata (read) for the org dashboard</li>
+        </ul>
       </li>
       <li>
-        <strong>Classic token</strong>: <code>repo</code> scope for private
-        repos. No scopes needed for public repos.
+        <strong>Classic</strong>: <code>repo</code> scope covers everything
       </li>
     </ul>
     <p class="hint">
-      Your token is kept in local browser storage and is only ever sent to
-      api.github.com. For best security, use a
+      Stored locally, only sent to
       <a
         href="https://github.com/settings/personal-access-tokens/new"
         target="_blank"
         rel="noopener noreferrer"
-        >fine-grained personal access token</a
-      >
-      scoped to just the repos you need.
+        >api.github.com</a
+      >. We don't have servers to store it on.
     </p>
   {/if}
   <form onsubmit={handleSubmit}>
@@ -216,11 +217,7 @@ async function handleSave() {
     >
   </div>
 
-  <p class="hint">
-    Requires a token with <strong>Deployments (read)</strong> and
-    <strong>Metadata (read)</strong>
-    permissions.
-  </p>
+  <p class="hint">Requires a token — see permission details above.</p>
 
   <hr
     style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
