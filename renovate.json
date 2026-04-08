@@ -7,21 +7,28 @@
     "before 5am every weekday"
   ],
   "prConcurrentLimit": 3,
-  "automerge": false,
-  "major": {
-    "automerge": false
-  },
+  "separateMajorMinor": true,
   "packageRules": [
     {
-      "description": "Group extension framework packages (WXT + Svelte + bridge module share peer deps)",
+      "description": "Group extension framework (WXT + Svelte share peer deps)",
       "matchPackageNames": [
         "wxt",
-        "@wxt-dev/module-svelte",
+        "@wxt-dev/**",
         "svelte",
         "svelte-check",
         "@tsconfig/svelte"
       ],
       "groupName": "extension framework"
+    },
+    {
+      "description": "Group TypeScript ecosystem",
+      "matchPackageNames": ["typescript", "tslib"],
+      "groupName": "typescript"
+    },
+    {
+      "description": "Group test infrastructure",
+      "matchPackageNames": ["vitest", "happy-dom"],
+      "groupName": "test infrastructure"
     }
   ]
 }
