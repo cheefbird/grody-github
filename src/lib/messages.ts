@@ -1,3 +1,4 @@
+import type { DeploymentResult } from "./deployment-types";
 import type { WorkflowResult } from "./types";
 
 export type GetWorkflowsMessage = {
@@ -6,8 +7,15 @@ export type GetWorkflowsMessage = {
   repo: string;
 };
 
-export type ExtensionMessage = GetWorkflowsMessage;
+export type GetOrgDeploymentsMessage = {
+  type: "GET_ORG_DEPLOYMENTS";
+  org: string;
+  force?: boolean;
+};
+
+export type ExtensionMessage = GetWorkflowsMessage | GetOrgDeploymentsMessage;
 
 export type MessageResponseMap = {
   GET_WORKFLOWS: WorkflowResult;
+  GET_ORG_DEPLOYMENTS: DeploymentResult;
 };

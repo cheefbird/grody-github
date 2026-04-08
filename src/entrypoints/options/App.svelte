@@ -1,13 +1,21 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { enabledStorage, pollIntervalStorage } from "@/lib/github-status";
-import { tokenStorage } from "@/lib/storage";
+import { deploymentsEnabledStorage, tokenStorage } from "@/lib/storage";
 
 let token = $state("");
 let status = $state<"idle" | "saving" | "success" | "error">("idle");
 let statusMessage = $state("");
 let loaded = $state(false);
 let showTokenHelp = $state(false);
+let savedFlash = $state<string | null>(null);
+
+function flash(id: string) {
+  savedFlash = null;
+  requestAnimationFrame(() => {
+    savedFlash = id;
+  });
+}
 
 function stripNonASCII(raw: string): string {
   return raw.replace(/[^\x20-\x7E]/g, "").trim();
@@ -15,6 +23,7 @@ function stripNonASCII(raw: string): string {
 
 let connected = $derived(loaded && stripNonASCII(token).length > 0);
 let statusEnabled = $state(true);
+let deploymentsEnabled = $state(true);
 let pollInterval = $state(15);
 const POLL_OPTIONS = [1, 5, 10, 15, 30, 45, 60];
 
@@ -35,10 +44,11 @@ onMount(async () => {
   try {
     statusEnabled = await enabledStorage.getValue();
     pollInterval = await pollIntervalStorage.getValue();
+    deploymentsEnabled = await deploymentsEnabledStorage.getValue();
   } catch (err) {
-    console.error("[grody-github] Failed to load status settings:", err);
+    console.error("[grody-github] Failed to load feature settings:", err);
     status = "error";
-    statusMessage = "Failed to load status settings. Defaults shown.";
+    statusMessage = "Failed to load feature settings. Defaults shown.";
   }
   loaded = true;
 });
@@ -53,13 +63,18 @@ async function validateToken(pat: string): Promise<boolean> {
   return response.ok;
 }
 
-async function handleStatusToggle() {
-  statusEnabled = !statusEnabled;
-  try {
-    await enabledStorage.setValue(statusEnabled);
-  } catch {
-    statusEnabled = !statusEnabled;
-  }
+function toggleSetting(
+  get: () => boolean,
+  set: (v: boolean) => void,
+  store: { setValue: (v: boolean) => Promise<void> },
+  flashId: string,
+) {
+  const next = !get();
+  set(next);
+  store
+    .setValue(next)
+    .then(() => flash(flashId))
+    .catch(() => set(!next));
 }
 
 async function handleIntervalChange(event: Event) {
@@ -68,6 +83,7 @@ async function handleIntervalChange(event: Event) {
   pollInterval = value;
   try {
     await pollIntervalStorage.setValue(value);
+    flash("interval");
   } catch {
     pollInterval = prev;
   }
@@ -130,14 +146,13 @@ async function handleSave() {
 </script>
 
 <main>
-  <h1>Grody GitHub Options</h1>
   {#if connected}
     <p class="connected">Connected</p>
   {/if}
 
-  <label for="pat">GitHub Personal Access Token (optional)</label>
+  <h2><label for="pat">GitHub Personal Access Token</label></h2>
   <p>
-    Add a token to avoid rate limits or filter workflows in private repos.
+    Optional but recommended. Without a token, you're limited to public repos.
     <button
       type="button"
       class="link-btn"
@@ -149,25 +164,25 @@ async function handleSave() {
   {#if showTokenHelp}
     <ul class="scope-list">
       <li>
-        <strong>Fine-grained token</strong>: grant
-        <strong>Actions (read)</strong>
-        on the repos you need. No permissions needed for public repos.
+        <strong>Fine-grained</strong>
+        (recommended): scope to just the repos you need
+        <ul>
+          <li>Actions (read) for workflow status</li>
+          <li>Deployments + Metadata (read) for the org dashboard</li>
+        </ul>
       </li>
       <li>
-        <strong>Classic token</strong>: <code>repo</code> scope for private
-        repos. No scopes needed for public repos.
+        <strong>Classic</strong>: <code>repo</code> scope covers everything
       </li>
     </ul>
     <p class="hint">
-      Your token is kept in local browser storage and is only ever sent to
-      api.github.com. For best security, use a
+      Stored locally, only sent to
       <a
         href="https://github.com/settings/personal-access-tokens/new"
         target="_blank"
         rel="noopener noreferrer"
-        >fine-grained personal access token</a
-      >
-      scoped to just the repos you need.
+        >api.github.com</a
+      >. We don't have servers to store it on.
     </p>
   {/if}
   <form onsubmit={handleSubmit}>
@@ -178,30 +193,61 @@ async function handleSave() {
     </button>
 
     {#if status === "success"}
-      <span role="status" class="msg success">{statusMessage || "Saved"}</span>
+      <span role="status" class="msg saved-flash"
+        >{statusMessage || "Saved"}</span
+      >
     {/if}
     {#if status === "error"}
       <span role="alert" class="msg error">Error: {statusMessage}</span>
     {/if}
   </form>
 
-  <hr
-    style="margin:1.5rem 0;border:none;border-top:1px solid light-dark(#d0d7de, #30363d);"
-  >
+  <hr>
+
+  <h2>Org Deployments Dashboard</h2>
+  <p>View deployment status across all repos in an organization.</p>
+
+  <div class="toggle-row">
+    <label for="deployments-enabled">Enabled</label>
+    <input
+      id="deployments-enabled"
+      type="checkbox"
+      checked={deploymentsEnabled}
+      onchange={() => toggleSetting(() => deploymentsEnabled, v => deploymentsEnabled = v, deploymentsEnabledStorage, "deployments")}
+    >
+    {#if savedFlash === "deployments"}
+      <span
+        class="saved-flash"
+        role="status"
+        onanimationend={() => savedFlash = null}
+        >Saved</span
+      >
+    {/if}
+  </div>
+
+  <p class="hint">Requires a token — see permission details above.</p>
+
+  <hr>
 
   <h2>GitHub Status Notifications</h2>
   <p>Show a banner on GitHub pages when there's an active incident.</p>
 
-  <div
-    style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"
-  >
-    <label for="status-enabled" style="margin:0;">Enabled</label>
+  <div class="toggle-row">
+    <label for="status-enabled">Enabled</label>
     <input
       id="status-enabled"
       type="checkbox"
       checked={statusEnabled}
-      onchange={handleStatusToggle}
+      onchange={() => toggleSetting(() => statusEnabled, v => statusEnabled = v, enabledStorage, "status")}
     >
+    {#if savedFlash === "status"}
+      <span
+        class="saved-flash"
+        role="status"
+        onanimationend={() => savedFlash = null}
+        >Saved</span
+      >
+    {/if}
   </div>
 
   <label for="poll-interval">Check for incidents every</label>
@@ -210,18 +256,25 @@ async function handleSave() {
     value={pollInterval}
     onchange={handleIntervalChange}
     disabled={!statusEnabled}
-    style="padding:0.3rem 0.5rem;font-size:0.85rem;border:1px solid light-dark(#d0d7de, #30363d);border-radius:6px;background:light-dark(#ffffff, #161b22);color:light-dark(#24292f, #e6edf3);"
   >
     {#each POLL_OPTIONS as opt}
       <option value={opt}>{opt} {opt === 1 ? "minute" : "minutes"}</option>
     {/each}
   </select>
+  {#if savedFlash === "interval"}
+    <span
+      class="saved-flash"
+      role="status"
+      onanimationend={() => savedFlash = null}
+      >Saved</span
+    >
+  {/if}
 </main>
 
 <style>
 main {
   max-width: 420px;
-  margin: 1rem auto;
+  margin: 0.5rem auto;
   padding: 0 1rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 0.85rem;
@@ -230,14 +283,13 @@ main {
   color: light-dark(#24292f, #e6edf3);
   background: transparent;
 }
-h1 {
-  font-size: 1.15rem;
-  margin: 0 0 0.75rem;
-}
 label {
-  display: block;
   font-weight: 600;
   margin-bottom: 0.25rem;
+}
+h2 > label {
+  font: inherit;
+  margin: 0;
 }
 p {
   color: light-dark(#656d76, #8b949e);
@@ -256,21 +308,41 @@ p {
 }
 .hint {
   font-size: 0.8rem;
-  color: light-dark(#656d76, #8b949e);
 }
 .hint a {
   color: light-dark(#0969da, #58a6ff);
 }
-input {
-  width: 100%;
+hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid light-dark(#d0d7de, #30363d);
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.toggle-row label {
+  margin: 0;
+}
+input,
+select {
   padding: 0.4rem 0.5rem;
   font-size: 0.85rem;
   border: 1px solid light-dark(#d0d7de, #30363d);
   border-radius: 6px;
-  margin-bottom: 0.5rem;
-  box-sizing: border-box;
   background: light-dark(#ffffff, #161b22);
   color: light-dark(#24292f, #e6edf3);
+}
+input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  box-sizing: border-box;
+}
+input[type="checkbox"] {
+  width: auto;
+  margin-bottom: 0;
 }
 button {
   padding: 0.4rem 1rem;
@@ -293,15 +365,12 @@ button:disabled {
   margin-left: 0.75rem;
   font-size: 0.85rem;
 }
-.success {
-  color: light-dark(#1a7f37, #3fb950);
-}
 .error {
   color: light-dark(#cf222e, #f85149);
 }
 h2 {
   font-size: 1rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.25rem;
 }
 select {
   cursor: pointer;
@@ -309,6 +378,20 @@ select {
 select:disabled {
   opacity: 0.6;
   cursor: default;
+}
+.saved-flash {
+  font-size: 0.8rem;
+  color: light-dark(#1a7f37, #3fb950);
+  animation: fade-out 1.5s ease-out forwards;
+}
+@keyframes fade-out {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 .link-btn {
   background: none;

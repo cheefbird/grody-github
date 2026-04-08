@@ -1,4 +1,10 @@
+import type { DeploymentCache, EnvironmentGroup } from "./deployment-types";
 import type { WorkflowCache } from "./types";
+
+export const deploymentsEnabledStorage = storage.defineItem<boolean>(
+  "local:org-deployments:enabled",
+  { fallback: true },
+);
 
 export const tokenStorage = storage.defineItem<string>("local:github-pat", {
   fallback: "",
@@ -29,4 +35,53 @@ export async function setCachedWorkflows(
     workflows,
     timestamp: Date.now(),
   });
+}
+
+const DEPLOYMENT_CACHE_TTL_MS = 5 * 60 * 1000;
+
+export function deploymentCacheKey(org: string) {
+  return `local:deployment-cache:${org}` as `local:${string}`;
+}
+
+export async function getCachedDeployments(
+  org: string,
+  tokenPrefix?: string,
+): Promise<DeploymentCache | null> {
+  const cached = await storage.getItem<DeploymentCache>(
+    deploymentCacheKey(org),
+  );
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > DEPLOYMENT_CACHE_TTL_MS) return null;
+  if (tokenPrefix && cached.tokenPrefix && cached.tokenPrefix !== tokenPrefix)
+    return null;
+  return cached;
+}
+
+export async function setCachedDeployments(
+  org: string,
+  groups: EnvironmentGroup[],
+  tokenPrefix?: string,
+): Promise<void> {
+  await storage.setItem<DeploymentCache>(deploymentCacheKey(org), {
+    groups,
+    timestamp: Date.now(),
+    tokenPrefix,
+  });
+}
+
+export function pinnedEnvsKey(org: string) {
+  return `local:pinned-envs:${org}` as `local:${string}`;
+}
+
+export async function getPinnedEnvironments(
+  org: string,
+): Promise<string[] | null> {
+  return storage.getItem<string[]>(pinnedEnvsKey(org));
+}
+
+export async function setPinnedEnvironments(
+  org: string,
+  names: string[],
+): Promise<void> {
+  await storage.setItem<string[]>(pinnedEnvsKey(org), names);
 }
