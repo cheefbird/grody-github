@@ -147,9 +147,11 @@ async function handleSave() {
     <p class="connected">Connected</p>
   {/if}
 
-  <label for="pat">GitHub Personal Access Token (optional)</label>
+  <label for="pat"
+    >GitHub Personal Access Token (optional but recommended)</label
+  >
   <p>
-    Without a token, you're limited to public repos. Add one to unlock
+    Without a token, you're limited to public repos. Add one to enable
     everything.
     <button
       type="button"
