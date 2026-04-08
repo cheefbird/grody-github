@@ -1,10 +1,10 @@
 <script lang="ts">
 import { onMount } from "svelte";
-import SearchFilter from "@/lib/components/SearchFilter.svelte";
 import { requestOrgDeployments } from "@/lib/deployment-api";
 import type { EnvironmentGroup } from "@/lib/deployment-types";
 import { getPinnedEnvironments, setPinnedEnvironments } from "@/lib/storage";
 import DeploymentCard from "./DeploymentCard.svelte";
+import SearchFilter from "./SearchFilter.svelte";
 import { autoDetectPins, getEnvColor, shouldExpandByDefault } from "./utils";
 
 let { org }: { org: string } = $props();

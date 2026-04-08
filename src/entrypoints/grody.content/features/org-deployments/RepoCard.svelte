@@ -1,7 +1,7 @@
 <script lang="ts">
-import RelativeTime from "@/lib/components/RelativeTime.svelte";
-import StatusDot from "@/lib/components/StatusDot.svelte";
 import { type RepoDeployment, STATE_COLORS } from "@/lib/deployment-types";
+import RelativeTime from "./RelativeTime.svelte";
+import StatusDot from "./StatusDot.svelte";
 
 let { deployment, owner }: { deployment: RepoDeployment; owner: string } =
   $props();

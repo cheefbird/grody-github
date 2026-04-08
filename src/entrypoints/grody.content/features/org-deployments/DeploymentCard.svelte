@@ -1,6 +1,6 @@
 <script lang="ts">
-import CollapsibleCard from "@/lib/components/CollapsibleCard.svelte";
 import type { EnvironmentGroup } from "@/lib/deployment-types";
+import CollapsibleCard from "./CollapsibleCard.svelte";
 import RepoCard from "./RepoCard.svelte";
 
 let {
