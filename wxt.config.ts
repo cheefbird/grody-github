@@ -22,7 +22,6 @@ export default defineConfig({
     browser_specific_settings: {
       gecko: {
         id: "grody-github@cheefbird",
-        // @ts-expect-error valid Firefox field, not yet typed by WXT
         data_collection_permissions: {
           required: ["browsingActivity"],
           optional: ["authenticationInfo"],
