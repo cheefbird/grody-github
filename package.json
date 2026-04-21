@@ -32,7 +32,7 @@
     "svelte": "5.55.4",
     "svelte-check": "4.4.6",
     "tslib": "2.8.1",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "vitest": "4.1.4",
     "wxt": "0.20.22"
   }
