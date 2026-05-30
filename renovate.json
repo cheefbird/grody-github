@@ -1,17 +1,22 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
-  "osvVulnerabilityAlerts": true,
-  "vulnerabilityAlerts": {
-    "labels": ["security"]
-  },
-  "schedule": [
-    "after 6pm every weekday",
-    "every weekend",
-    "before 5am every weekday"
+  "extends": [
+    "config:best-practices",
+    "helpers:pinGitHubActionDigestsToSemver",
+    "mergeConfidence:all-badges"
   ],
-  "prConcurrentLimit": 3,
+  "schedule": ["after 4pm every day", "before 8am every weekday"],
+  "prConcurrentLimit": 5,
   "separateMajorMinor": true,
+  "major": {
+    "dependencyDashboardApproval": true
+  },
+  "osvVulnerabilityAlerts": true,
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "vulnerabilityAlerts": {
+    "addLabels": ["security"],
+    "prConcurrentLimit": 10
+  },
   "packageRules": [
     {
       "description": "Group extension framework (WXT + Svelte share peer deps)",
