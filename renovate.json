@@ -5,7 +5,7 @@
     "helpers:pinGitHubActionDigestsToSemver",
     "mergeConfidence:all-badges"
   ],
-  "schedule": ["after 4pm every day", "before 8am every weekday"],
+  "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
   "separateMajorMinor": true,
   "major": {
