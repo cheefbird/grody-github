@@ -149,7 +149,7 @@ function handleClosePopover() {
           type="button"
           class="details-btn"
           onclick={handleTogglePopover}
-          aria-expanded={popoverOpen}
+          aria-expanded={popoverOpen ? "true" : "false"}
         >
           Details
         </button>
