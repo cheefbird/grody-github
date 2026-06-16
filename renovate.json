@@ -3,10 +3,12 @@
   "extends": [
     "config:best-practices",
     "helpers:pinGitHubActionDigestsToSemver",
-    "mergeConfidence:all-badges"
+    "mergeConfidence:all-badges",
+    "workarounds:all"
   ],
   "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
   "separateMajorMinor": true,
   "major": {
     "dependencyDashboardApproval": true
@@ -15,6 +17,7 @@
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
     "addLabels": ["security"],
+    "minimumReleaseAge": null,
     "prConcurrentLimit": 10
   },
   "packageRules": [
