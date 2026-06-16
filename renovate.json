@@ -6,10 +6,7 @@
     "mergeConfidence:all-badges",
     "workarounds:all"
   ],
-  "schedule": [
-    "after 4pm",
-    "before 8am"
-  ],
+  "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
   "separateMajorMinor": true,
@@ -19,9 +16,7 @@
   "osvVulnerabilityAlerts": true,
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
-    "addLabels": [
-      "security"
-    ],
+    "addLabels": ["security"],
     "minimumReleaseAge": null,
     "prConcurrentLimit": 10
   },
@@ -39,18 +34,12 @@
     },
     {
       "description": "Group TypeScript ecosystem",
-      "matchPackageNames": [
-        "typescript",
-        "tslib"
-      ],
+      "matchPackageNames": ["typescript", "tslib"],
       "groupName": "typescript"
     },
     {
       "description": "Group test infrastructure",
-      "matchPackageNames": [
-        "vitest",
-        "happy-dom"
-      ],
+      "matchPackageNames": ["vitest", "happy-dom"],
       "groupName": "test infrastructure"
     }
   ]
