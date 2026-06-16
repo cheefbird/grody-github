@@ -11,6 +11,7 @@
     "before 8am"
   ],
   "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
   "separateMajorMinor": true,
   "major": {
     "dependencyDashboardApproval": true
