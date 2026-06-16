@@ -3,10 +3,15 @@
   "extends": [
     "config:best-practices",
     "helpers:pinGitHubActionDigestsToSemver",
-    "mergeConfidence:all-badges"
+    "mergeConfidence:all-badges",
+    "workarounds:all"
   ],
-  "schedule": ["after 4pm", "before 8am"],
+  "schedule": [
+    "after 4pm",
+    "before 8am"
+  ],
   "prConcurrentLimit": 5,
+  "minimumReleaseAge": "7 days",
   "separateMajorMinor": true,
   "major": {
     "dependencyDashboardApproval": true
@@ -14,7 +19,10 @@
   "osvVulnerabilityAlerts": true,
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
-    "addLabels": ["security"],
+    "addLabels": [
+      "security"
+    ],
+    "minimumReleaseAge": null,
     "prConcurrentLimit": 10
   },
   "packageRules": [
@@ -31,12 +39,18 @@
     },
     {
       "description": "Group TypeScript ecosystem",
-      "matchPackageNames": ["typescript", "tslib"],
+      "matchPackageNames": [
+        "typescript",
+        "tslib"
+      ],
       "groupName": "typescript"
     },
     {
       "description": "Group test infrastructure",
-      "matchPackageNames": ["vitest", "happy-dom"],
+      "matchPackageNames": [
+        "vitest",
+        "happy-dom"
+      ],
       "groupName": "test infrastructure"
     }
   ]
