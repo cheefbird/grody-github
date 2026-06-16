@@ -50,8 +50,7 @@ onMount(() => {
 });
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="popover" bind:this={popoverEl} tabindex="0">
+<div class="popover" bind:this={popoverEl} tabindex="-1">
   {#each incidents as incident, i}
     {#if i > 0}
       <hr class="divider">

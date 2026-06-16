@@ -19,6 +19,7 @@ const labelMap: Record<DeploymentState, string> = {
 <span
   class="status-dot"
   style:background={STATE_COLORS[state]}
+  role="img"
   aria-label={labelMap[state]}
 ></span>
 
