@@ -11,7 +11,6 @@
     "before 8am"
   ],
   "prConcurrentLimit": 5,
-  "minimumReleaseAge": "7 days",
   "separateMajorMinor": true,
   "major": {
     "dependencyDashboardApproval": true
