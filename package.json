@@ -28,12 +28,12 @@
     "@biomejs/biome": "2.5.0",
     "@tsconfig/svelte": "5.0.8",
     "@wxt-dev/module-svelte": "2.0.5",
-    "happy-dom": "20.10.3",
+    "happy-dom": "20.10.6",
     "svelte": "5.56.3",
     "svelte-check": "4.6.0",
     "tslib": "2.8.1",
     "typescript": "6.0.3",
-    "vitest": "4.1.8",
+    "vitest": "4.1.9",
     "wxt": "0.20.26"
   }
 }
