@@ -25,7 +25,7 @@
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.2",
+    "@biomejs/biome": "2.5.3",
     "@tsconfig/svelte": "5.0.8",
     "@wxt-dev/module-svelte": "2.0.5",
     "happy-dom": "20.10.6",
