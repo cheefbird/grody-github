@@ -33,13 +33,13 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
       vite:
-        specifier: ^8.1.5
+        specifier: 8.1.5
         version: 8.1.5(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.7.0)
       vitest:
         specifier: 4.1.10
         version: 4.1.10(@types/node@26.1.1)(happy-dom@20.11.1)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.7.0))
       web-ext:
-        specifier: ^10.5.0
+        specifier: 10.5.0
         version: 10.5.0(jiti@2.7.0)(supports-color@7.2.0)
       wxt:
         specifier: 0.21.2
