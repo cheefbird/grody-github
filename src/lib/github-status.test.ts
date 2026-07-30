@@ -61,7 +61,7 @@ describe("transformSummary", () => {
     const result = transformSummary(raw);
     expect(result.indicator).toBe("major");
     expect(result.incidents).toHaveLength(1);
-    expect(result.incidents[0].components).toEqual([
+    expect(result.incidents[0]?.components).toEqual([
       { name: "Actions", status: "degraded_performance" },
     ]);
   });
@@ -93,9 +93,9 @@ describe("transformSummary", () => {
     });
     const result = transformSummary(raw);
     expect(result.incidents).toHaveLength(1);
-    expect(result.incidents[0].status).toBe("resolved");
-    expect(result.incidents[0].resolved_at).toBe("2026-03-13T09:00:00Z");
-    expect(result.incidents[0].components).toEqual([]);
+    expect(result.incidents[0]?.status).toBe("resolved");
+    expect(result.incidents[0]?.resolved_at).toBe("2026-03-13T09:00:00Z");
+    expect(result.incidents[0]?.components).toEqual([]);
   });
 
   it("handles empty object gracefully", () => {
@@ -128,7 +128,7 @@ describe("transformSummary", () => {
       ],
     });
     const result = transformSummary(raw);
-    expect(result.incidents[0].components).toEqual([
+    expect(result.incidents[0]?.components).toEqual([
       { name: "Actions", status: "degraded_performance" },
     ]);
   });

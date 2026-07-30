@@ -31,10 +31,9 @@ const MAX_PAGES = 10;
 export function parseLinkHeader(header: string | null): string | null {
   if (!header) return null;
   const match = /<([^>]+)>;\s*rel="next"/.exec(header);
-  if (!match) return null;
-  const nextUrl = match[1];
+  const nextUrl = match?.[1];
   // Only follow links back to the GitHub API
-  if (!nextUrl.startsWith("https://api.github.com/")) return null;
+  if (!nextUrl?.startsWith("https://api.github.com/")) return null;
   return nextUrl;
 }
 

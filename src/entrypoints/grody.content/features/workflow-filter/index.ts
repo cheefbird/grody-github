@@ -8,9 +8,9 @@ const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
 
 function parseRepo(): { owner: string; repo: string } | null {
-  const parts = location.pathname.split("/").filter(Boolean);
-  if (parts.length < 2) return null;
-  return { owner: parts[0], repo: parts[1] };
+  const [owner, repo] = location.pathname.split("/").filter(Boolean);
+  if (!owner || !repo) return null;
+  return { owner, repo };
 }
 
 const definition: FeatureDefinition = {

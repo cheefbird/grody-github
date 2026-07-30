@@ -243,7 +243,7 @@ describe("fetchAllWorkflows", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchAllWorkflows("owner", "repo", "ghp_test123");
-    const callHeaders = fetchMock.mock.calls[0][1].headers;
+    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
     expect(callHeaders.Authorization).toBe("token ghp_test123");
   });
 
@@ -256,7 +256,7 @@ describe("fetchAllWorkflows", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await fetchAllWorkflows("owner", "repo", null);
-    const callHeaders = fetchMock.mock.calls[0][1].headers;
+    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
     expect(callHeaders.Authorization).toBeUndefined();
   });
 });
