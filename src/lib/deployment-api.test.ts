@@ -105,7 +105,7 @@ describe("transformDeploymentData", () => {
     expect(
       result.find((g) => g.name === "production")?.deployments,
     ).toHaveLength(1);
-    expect(result[0].deployments[0].ref).toBe("v2.0.0");
+    expect(result[0]?.deployments[0]?.ref).toBe("v2.0.0");
   });
 
   it("sorts environments alphabetically", () => {
@@ -227,7 +227,7 @@ describe("transformDeploymentData", () => {
 
     const result = transformDeploymentData(raw);
     expect(result).toHaveLength(1);
-    expect(result[0].deployments).toHaveLength(1);
+    expect(result[0]?.deployments).toHaveLength(1);
   });
 
   it("normalizes GraphQL state to lowercase", () => {
@@ -249,7 +249,7 @@ describe("transformDeploymentData", () => {
       },
     ];
 
-    expect(transformDeploymentData(raw)[0].deployments[0].state).toBe(
+    expect(transformDeploymentData(raw)[0]?.deployments[0]?.state).toBe(
       "in_progress",
     );
   });
@@ -273,9 +273,9 @@ describe("transformDeploymentData", () => {
       },
     ];
 
-    const d = transformDeploymentData(raw)[0].deployments[0];
-    expect(d.ref).toBe("abc1234");
-    expect(d.creator).toBe("unknown");
+    const d = transformDeploymentData(raw)[0]?.deployments[0];
+    expect(d?.ref).toBe("abc1234");
+    expect(d?.creator).toBe("unknown");
   });
 });
 
@@ -292,7 +292,7 @@ describe("fetchOrgDeployments", () => {
     await fetchOrgDeployments("my-org", "ghp_token123");
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, opts] = fetchMock.mock.calls[0];
+    const [url, opts] = fetchMock.mock.calls[0] ?? [];
     expect(url).toBe("https://api.github.com/graphql");
     expect(opts.method).toBe("POST");
     expect(opts.headers.Authorization).toBe("bearer ghp_token123");
@@ -323,8 +323,8 @@ describe("fetchOrgDeployments", () => {
 
     const result = await fetchOrgDeployments("my-org", "ghp_token");
     expect(result.groups).toHaveLength(1);
-    expect(result.groups[0].name).toBe("production");
-    expect(result.groups[0].deployments[0].repoName).toBe("api");
+    expect(result.groups[0]?.name).toBe("production");
+    expect(result.groups[0]?.deployments[0]?.repoName).toBe("api");
   });
 
   it("paginates through multiple pages of repos", async () => {

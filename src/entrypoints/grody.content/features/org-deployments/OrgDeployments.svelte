@@ -126,8 +126,8 @@ let envColorMap = $state<Record<string, string>>({});
 
 function initColorMap(envGroups: EnvironmentGroup[]) {
   const map: Record<string, string> = {};
-  for (let i = 0; i < envGroups.length; i++) {
-    map[envGroups[i].name] = getEnvColor(i);
+  for (const [i, group] of envGroups.entries()) {
+    map[group.name] = getEnvColor(i);
   }
   envColorMap = map;
 }

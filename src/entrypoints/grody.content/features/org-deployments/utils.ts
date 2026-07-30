@@ -23,7 +23,9 @@ const ENV_COLORS = [
 ];
 
 export function getEnvColor(index: number): string {
-  return ENV_COLORS[index % ENV_COLORS.length];
+  return (
+    ENV_COLORS[index % ENV_COLORS.length] ?? "var(--fgColor-muted, #7d8590)"
+  );
 }
 
 const EXPANDED_PATTERNS = [/dev/i, /staging/i, /stg/i, /prod/i];

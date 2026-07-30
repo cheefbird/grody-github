@@ -13,8 +13,8 @@ let {
 }: {
   group: EnvironmentGroup;
   owner: string;
-  expanded: boolean;
-  accentColor: string;
+  expanded?: boolean;
+  accentColor?: string;
   pinned?: boolean;
   onTogglePin?: (envName: string) => void;
 } = $props();
