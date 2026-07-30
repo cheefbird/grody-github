@@ -43,16 +43,24 @@ jobs:
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: "3"
 
       - name: Run tests
+        background: true
         run: pnpm test
 
       - name: Type check
+        background: true
         run: pnpm check
 
       - name: Build Chrome
+        background: true
         run: pnpm build
 
       - name: Build Firefox
+        background: true
         run: pnpm build:firefox
 
       - name: Build Edge
+        background: true
         run: pnpm build:edge
+
+      - name: Wait for Checks
+        wait-all:
