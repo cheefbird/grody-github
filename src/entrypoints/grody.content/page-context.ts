@@ -23,6 +23,3 @@ export const isPRPage = (ctx: PageContext) =>
 
 export const isIssuePage = (ctx: PageContext) =>
   /^\/[^/]+\/[^/]+\/issues\/\d+/.test(ctx.pathname);
-
-export const isOrgInsightsPage = (ctx: PageContext) =>
-  /^\/orgs\/[^/]+\/insights(\/|$)/.test(ctx.pathname);
