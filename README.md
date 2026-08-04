@@ -4,7 +4,7 @@
   <img src="public/icon/128.png" width="128" height="128" alt="Grody GitHub" />
 </p>
 
-Filter your long list of workflows in Github! See your Org's deployments grouped by environment name, across repos! And more to come.
+Filter your long list of workflows in GitHub! Know about GitHub incidents before you start blaming your code! And more to come.
 
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/pbghkjaknoiilominkjgmfjeoobkhfkn"><img src="https://badgen.net/chrome-web-store/v/pbghkjaknoiilominkjgmfjeoobkhfkn?icon=chrome&color=blue" alt="Chrome Web Store" /></a>
@@ -31,15 +31,6 @@ Adds a search box to the Actions sidebar so you can actually find your workflows
 - Caches the workflow list for 24 hours so it's snappy after first load
 - Works with dark theme
 - Handles repos with hundreds of workflows without breaking a sweat
-
-### Org Deployments Dashboard
-
-See deployment status across every repo in an org, all in one place. Lives on the org insights page as a new sidebar tab.
-
-- Groups deployments by environment with color-coded status
-- Pin your most-used environments to the top
-- Search and manual refresh with cache-first loading
-- Requires a token with Deployments (read) and Metadata (read) permissions
 
 ## Optional Features
 
@@ -77,7 +68,7 @@ Then in Chrome:
 1. Click the Grody GitHub extension icon
 2. Hit **Options**
 3. Paste a [GitHub Personal Access Token](https://github.com/settings/tokens) (optional — only needed for rate limits or private repos)
-   - **Fine-grained token**: Actions (read) on the repos you need. Org Deployments also needs Deployments (read) and Metadata (read).
+   - **Fine-grained token**: Actions (read) on the repos you need
    - **Classic token**: `repo` scope
    - No token or scopes needed for public repos only
 4. Token gets validated on save — the popup turns green when you're connected
