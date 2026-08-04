@@ -31,6 +31,8 @@ const definition: FeatureDefinition = {
       return;
     }
 
+    if (signal.aborted) return;
+
     const showMore = navList
       .closest("nav")
       ?.querySelector<HTMLElement>(SHOW_MORE_SELECTOR);

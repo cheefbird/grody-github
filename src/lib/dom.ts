@@ -6,10 +6,10 @@ export function waitForElement<T extends Element = Element>(
   selector: string,
   signal: AbortSignal,
 ): Promise<T | null> {
+  if (signal.aborted) return Promise.resolve(null);
+
   const existing = document.querySelector<T>(selector);
   if (existing) return Promise.resolve(existing);
-
-  if (signal.aborted) return Promise.resolve(null);
 
   return new Promise<T | null>((resolve) => {
     const observer = new MutationObserver(() => {

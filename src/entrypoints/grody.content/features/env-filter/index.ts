@@ -35,6 +35,8 @@ const definition: FeatureDefinition = {
       return;
     }
 
+    if (signal.aborted) return;
+
     if (!hasShowMoreControl(nav)) return;
 
     const repoInfo = parseRepo();
