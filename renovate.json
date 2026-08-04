@@ -41,6 +41,11 @@
       "description": "Group test infrastructure",
       "matchPackageNames": ["vitest", "happy-dom"],
       "groupName": "test infrastructure"
+    },
+    {
+      "description": "Node version updates keep existing precision (.nvmrc stays major.minor), no pinning to full patch",
+      "matchDepNames": ["node"],
+      "rangeStrategy": "replace"
     }
   ]
 }
