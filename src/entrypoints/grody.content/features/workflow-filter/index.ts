@@ -51,14 +51,8 @@ const definition: FeatureDefinition = {
     const container = document.createElement("div");
     workflowsSection.before(container);
 
-    let app: ReturnType<typeof mount> | null = mount(WorkflowFilter, {
-      target: container,
-      props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        navList,
-      },
-    });
+    // Registered before mount so a mount() throw still triggers cleanup
+    let app: ReturnType<typeof mount> | null = null;
 
     signal.addEventListener("abort", () => {
       if (app) {
@@ -66,6 +60,15 @@ const definition: FeatureDefinition = {
         app = null;
       }
       container.remove();
+    });
+
+    app = mount(WorkflowFilter, {
+      target: container,
+      props: {
+        owner: repoInfo.owner,
+        repo: repoInfo.repo,
+        navList,
+      },
     });
   },
 };

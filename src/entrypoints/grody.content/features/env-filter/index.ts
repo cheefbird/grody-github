@@ -50,14 +50,8 @@ const definition: FeatureDefinition = {
     container.className = CONTAINER_CLASS;
     nav.before(container);
 
-    let app: ReturnType<typeof mount> | null = mount(EnvFilter, {
-      target: container,
-      props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        container,
-      },
-    });
+    // Registered before mount so a mount() throw still triggers cleanup
+    let app: ReturnType<typeof mount> | null = null;
 
     signal.addEventListener("abort", () => {
       if (app) {
@@ -66,6 +60,15 @@ const definition: FeatureDefinition = {
       }
       container.remove();
       style.remove();
+    });
+
+    app = mount(EnvFilter, {
+      target: container,
+      props: {
+        owner: repoInfo.owner,
+        repo: repoInfo.repo,
+        container,
+      },
     });
   },
 };
