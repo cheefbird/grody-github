@@ -15,6 +15,9 @@ export function buildPageContext(url: URL): PageContext {
 export const isActionsPage = (ctx: PageContext) =>
   /^\/[^/]+\/[^/]+\/actions(\/|$)/.test(ctx.pathname);
 
+export const isDeploymentsPage = (ctx: PageContext) =>
+  /^\/[^/]+\/[^/]+\/deployments(\/|$)/.test(ctx.pathname);
+
 export const isRepoPage = (ctx: PageContext) =>
   ctx.owner !== undefined && ctx.repo !== undefined;
 

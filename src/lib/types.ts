@@ -3,11 +3,19 @@ export type Workflow = {
   path: string;
 };
 
-export type WorkflowCache = {
-  workflows: Workflow[];
+export type WorkflowResult =
+  | { ok: true; workflows: Workflow[] }
+  | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
+
+export type Environment = {
+  name: string;
+};
+
+export type ListCacheEntry<T> = {
+  items: T[];
   timestamp: number;
 };
 
-export type WorkflowResult =
-  | { ok: true; workflows: Workflow[] }
+export type EnvironmentResult =
+  | { ok: true; environments: Environment[] }
   | { ok: false; reason: "rate-limited" | "auth-required" | "error" };

@@ -3,6 +3,7 @@ import type { PageContext } from "@/lib/feature-types";
 import {
   buildPageContext,
   isActionsPage,
+  isDeploymentsPage,
   isIssuePage,
   isPRPage,
   isRepoPage,
@@ -100,6 +101,30 @@ describe("isPRPage", () => {
 
   it("does not match pulls list", () => {
     expect(isPRPage(ctx("/owner/repo/pulls"))).toBe(false);
+  });
+});
+
+describe("isDeploymentsPage", () => {
+  it("matches /owner/repo/deployments", () => {
+    expect(isDeploymentsPage(ctx("/owner/repo/deployments"))).toBe(true);
+  });
+
+  it("matches /owner/repo/deployments/", () => {
+    expect(isDeploymentsPage(ctx("/owner/repo/deployments/"))).toBe(true);
+  });
+
+  it("matches environment subpages", () => {
+    expect(isDeploymentsPage(ctx("/owner/repo/deployments/prod-us"))).toBe(
+      true,
+    );
+  });
+
+  it("does not match /owner/repo/deploymentsx", () => {
+    expect(isDeploymentsPage(ctx("/owner/repo/deploymentsx"))).toBe(false);
+  });
+
+  it("does not match non-repo paths", () => {
+    expect(isDeploymentsPage(ctx("/deployments"))).toBe(false);
   });
 });
 

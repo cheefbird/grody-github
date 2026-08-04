@@ -1,11 +1,14 @@
 import { mount, unmount } from "svelte";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
-import { isActionsPage } from "../../page-context";
-import WorkflowFilter from "./WorkflowFilter.svelte";
+import { isDeploymentsPage } from "../../page-context";
+import EnvFilter from "./EnvFilter.svelte";
 
-const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
-const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
+const ENV_NAV_SELECTOR = 'nav[class*="environmentlist"]';
+const CONTAINER_CLASS = "grody-env-filter";
+
+// Hides React's env list while our filter is active without touching its DOM
+const HIDE_RULE = `.${CONTAINER_CLASS}[data-filtering] ~ ${ENV_NAV_SELECTOR} { display: none; }`;
 
 function parseRepo(): { owner: string; repo: string } | null {
   const [owner, repo] = location.pathname.split("/").filter(Boolean);
@@ -13,43 +16,39 @@ function parseRepo(): { owner: string; repo: string } | null {
   return { owner, repo };
 }
 
+function hasShowMoreControl(nav: HTMLElement): boolean {
+  return [...nav.querySelectorAll("a, button")].some((el) =>
+    /show more environments/i.test(el.textContent ?? ""),
+  );
+}
+
 const definition: FeatureDefinition = {
-  id: "workflow-filter",
-  include: [isActionsPage],
+  id: "env-filter",
+  include: [isDeploymentsPage],
   reinitOnNavigation: true,
   async init(_ctx, signal) {
-    const navList = await waitForElement<HTMLElement>(
-      SIDEBAR_NAV_SELECTOR,
-      signal,
-    );
-    if (!navList) {
+    const nav = await waitForElement<HTMLElement>(ENV_NAV_SELECTOR, signal);
+    if (!nav) {
       if (import.meta.env.DEV && !signal.aborted) {
-        console.warn(
-          "[grody:workflow-filter] sidebar nav not found after waiting",
-        );
+        console.warn("[grody:env-filter] environments nav not found");
       }
       return;
     }
 
     if (signal.aborted) return;
 
-    const showMore = navList
-      .closest("nav")
-      ?.querySelector<HTMLElement>(SHOW_MORE_SELECTOR);
-    if (!showMore) return;
-    const totalPages = Number(showMore.dataset.totalPages ?? "1");
-    if (totalPages <= 1) return;
+    if (!hasShowMoreControl(nav)) return;
 
     const repoInfo = parseRepo();
     if (!repoInfo) return;
 
-    const workflowsSection = navList.querySelector<HTMLElement>(
-      ":scope > li:has(nav-list-group)",
-    );
-    if (!workflowsSection) return;
+    const style = document.createElement("style");
+    style.textContent = HIDE_RULE;
+    document.head.append(style);
 
     const container = document.createElement("div");
-    workflowsSection.before(container);
+    container.className = CONTAINER_CLASS;
+    nav.before(container);
 
     // Registered before mount so a mount() throw still triggers cleanup
     let app: ReturnType<typeof mount> | null = null;
@@ -60,14 +59,15 @@ const definition: FeatureDefinition = {
         app = null;
       }
       container.remove();
+      style.remove();
     });
 
-    app = mount(WorkflowFilter, {
+    app = mount(EnvFilter, {
       target: container,
       props: {
         owner: repoInfo.owner,
         repo: repoInfo.repo,
-        navList,
+        container,
       },
     });
   },

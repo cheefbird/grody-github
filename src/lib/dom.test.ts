@@ -64,6 +64,14 @@ describe("waitForElement", () => {
     expect(el).toBeNull();
   });
 
+  it("returns null for an already-aborted signal even if element exists", async () => {
+    setBody('<div id="target">hello</div>');
+
+    const el = await waitForElement("#target", AbortSignal.abort("torn down"));
+
+    expect(el).toBeNull();
+  });
+
   it("disconnects observer after element is found", async () => {
     const promise = waitForElement("#target", AbortSignal.timeout(5000));
 

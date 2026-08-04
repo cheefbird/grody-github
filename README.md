@@ -4,7 +4,7 @@
   <img src="public/icon/128.png" width="128" height="128" alt="Grody GitHub" />
 </p>
 
-Filter your long list of workflows in GitHub! Know about GitHub incidents before you start blaming your code! And more to come.
+Filter your long lists of workflows and deployment environments in GitHub! Know about GitHub incidents before you start blaming your code! And more to come.
 
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/pbghkjaknoiilominkjgmfjeoobkhfkn"><img src="https://badgen.net/chrome-web-store/v/pbghkjaknoiilominkjgmfjeoobkhfkn?icon=chrome&color=blue" alt="Chrome Web Store" /></a>
@@ -15,7 +15,7 @@ Filter your long list of workflows in GitHub! Know about GitHub incidents before
 
 ## What is this
 
-GitHub's UI is fine. Until it isn't. If you've ever scrolled through a sidebar of 80 workflows trying to find the one you need, you know the feeling.
+GitHub's UI is fine. Until it isn't. If you've ever scrolled through a sidebar of 80 workflows — or a deployments page with 100+ environments — trying to find the one you need, you know the feeling.
 
 Grody GitHub is a Chrome extension that bolts small, targeted fixes onto GitHub's interface. One feature at a time. No bloat.
 
@@ -31,6 +31,14 @@ Adds a search box to the Actions sidebar so you can actually find your workflows
 - Caches the workflow list for 24 hours so it's snappy after first load
 - Works with dark theme
 - Handles repos with hundreds of workflows without breaking a sweat
+
+### Environment Sidebar Filter
+
+Same idea, but for the deployments page. Repos with dozens of environments get a search box above the environments sidebar.
+
+- Real-time search on environment name — covers everything hidden behind "Show more environments"
+- Caches the environment list for 24 hours
+- Only shows up when the list is actually truncated
 
 ## Optional Features
 
@@ -78,8 +86,8 @@ Then in Chrome:
 ```bash
 pnpm dev            # Dev server with hot reload (Chrome)
 pnpm dev:firefox    # Dev server (Firefox)
-pnpm format         # Biome formatter
 pnpm lint           # Biome check (format + lint)
+pnpm lint:fix       # Biome check with autofix
 pnpm test           # Run tests
 pnpm check          # Svelte type checking
 ```
