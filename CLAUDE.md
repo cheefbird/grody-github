@@ -51,3 +51,5 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 
 - `storage` from WXT is an auto-import global — don't add `import { storage } from "wxt/storage"` in `src/lib/` files
 - Generated `.wxt/tsconfig.json` enables `noUncheckedIndexedAccess` — array/record indexing yields `T | undefined`, narrow or use optional chaining
+- GitHub's newer pages (e.g. `/deployments`) are React apps — never mutate React-owned DOM (workflow-filter's `replaceChildren` approach only works on server-rendered pages like `/actions`). Mount in a sibling container and hide/show via CSS instead; see `env-filter`
+- React pages use hashed CSS-module classes — match on the stable prefix with `[class*="..."]` selectors, never the full class name
