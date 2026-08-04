@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   resolve-tag:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 2
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -52,7 +52,7 @@ jobs:
       github.event_name == 'release' ||
       inputs.stores == 'chrome' ||
       inputs.stores == 'all'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: chrome-store
     concurrency:
@@ -108,7 +108,7 @@ jobs:
       github.event_name == 'release' ||
       inputs.stores == 'firefox' ||
       inputs.stores == 'all'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: firefox-store
     concurrency:
@@ -172,7 +172,7 @@ jobs:
       github.event_name == 'release' ||
       inputs.stores == 'edge' ||
       inputs.stores == 'all'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: edge-store
     concurrency:
