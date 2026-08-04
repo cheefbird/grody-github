@@ -1,9 +1,5 @@
 import type { GetWorkflowsMessage } from "./messages";
-import {
-  getCachedWorkflows,
-  setCachedWorkflows,
-  tokenStorage,
-} from "./storage";
+import { tokenStorage, workflowCache } from "./storage";
 import type { Workflow, WorkflowResult } from "./types";
 
 type WorkflowApiResponse = {
@@ -82,11 +78,11 @@ export async function getWorkflows(
   try {
     const token = (await tokenStorage.getValue()) || null;
 
-    const cached = await getCachedWorkflows(owner, repo);
-    if (cached) return { ok: true, workflows: cached.workflows };
+    const cached = await workflowCache.get(owner, repo);
+    if (cached) return { ok: true, workflows: cached.items };
 
     const workflows = await fetchAllWorkflows(owner, repo, token);
-    await setCachedWorkflows(owner, repo, workflows);
+    await workflowCache.set(owner, repo, workflows);
     return { ok: true, workflows };
   } catch (err) {
     console.error("[grody-github] Failed to fetch workflows:", err);

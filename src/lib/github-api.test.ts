@@ -6,7 +6,7 @@ import {
   getWorkflows,
   parseLinkHeader,
 } from "./github-api";
-import { setCachedWorkflows } from "./storage";
+import { workflowCache } from "./storage";
 
 describe("parseLinkHeader", () => {
   it("returns next URL from a valid Link header", () => {
@@ -273,7 +273,7 @@ describe("getWorkflows", () => {
 
   it("returns cached workflows when cache is fresh", async () => {
     const workflows = [{ name: "CI", path: ".github/workflows/ci.yml" }];
-    await setCachedWorkflows("owner", "repo", workflows);
+    await workflowCache.set("owner", "repo", workflows);
 
     const result = await getWorkflows("owner", "repo");
     expect(result).toEqual({ ok: true, workflows });
