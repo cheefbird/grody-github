@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { enabledStorage, pollIntervalStorage } from "@/lib/github-status";
-import { deploymentsEnabledStorage, tokenStorage } from "@/lib/storage";
+import { tokenStorage } from "@/lib/storage";
 
 let token = $state("");
 let status = $state<"idle" | "saving" | "success" | "error">("idle");
@@ -23,7 +23,6 @@ function stripNonASCII(raw: string): string {
 
 let connected = $derived(loaded && stripNonASCII(token).length > 0);
 let statusEnabled = $state(true);
-let deploymentsEnabled = $state(true);
 let pollInterval = $state(15);
 const POLL_OPTIONS = [1, 5, 10, 15, 30, 45, 60];
 
@@ -44,7 +43,6 @@ onMount(async () => {
   try {
     statusEnabled = await enabledStorage.getValue();
     pollInterval = await pollIntervalStorage.getValue();
-    deploymentsEnabled = await deploymentsEnabledStorage.getValue();
   } catch (err) {
     console.error("[grody-github] Failed to load feature settings:", err);
     status = "error";
@@ -168,7 +166,6 @@ async function handleSave() {
         (recommended): scope to just the repos you need
         <ul>
           <li>Actions (read) for workflow status</li>
-          <li>Deployments + Metadata (read) for the org dashboard</li>
         </ul>
       </li>
       <li>
@@ -201,31 +198,6 @@ async function handleSave() {
       <span role="alert" class="msg error">Error: {statusMessage}</span>
     {/if}
   </form>
-
-  <hr>
-
-  <h2>Org Deployments Dashboard</h2>
-  <p>View deployment status across all repos in an organization.</p>
-
-  <div class="toggle-row">
-    <label for="deployments-enabled">Enabled</label>
-    <input
-      id="deployments-enabled"
-      type="checkbox"
-      checked={deploymentsEnabled}
-      onchange={() => toggleSetting(() => deploymentsEnabled, v => deploymentsEnabled = v, deploymentsEnabledStorage, "deployments")}
-    >
-    {#if savedFlash === "deployments"}
-      <span
-        class="saved-flash"
-        role="status"
-        onanimationend={() => savedFlash = null}
-        >Saved</span
-      >
-    {/if}
-  </div>
-
-  <p class="hint">Requires a token — see permission details above.</p>
 
   <hr>
 

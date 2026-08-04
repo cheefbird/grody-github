@@ -1,4 +1,3 @@
-import { getOrgDeployments } from "@/lib/deployment-api";
 import { getWorkflows } from "@/lib/github-api";
 import {
   collapsedStorage,
@@ -47,10 +46,6 @@ export default defineBackground(() => {
     (message: ExtensionMessage, _sender, sendResponse) => {
       if (message.type === "GET_WORKFLOWS") {
         getWorkflows(message.owner, message.repo).then(sendResponse);
-        return true;
-      }
-      if (message.type === "GET_ORG_DEPLOYMENTS") {
-        getOrgDeployments(message.org, message.force).then(sendResponse);
         return true;
       }
     },
