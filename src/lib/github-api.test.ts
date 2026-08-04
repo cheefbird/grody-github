@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 import {
+  fetchAllEnvironments,
   fetchAllWorkflows,
   GitHubApiError,
+  getEnvironments,
   getWorkflows,
   parseLinkHeader,
 } from "./github-api";
-import { workflowCache } from "./storage";
+import { environmentCache, workflowCache } from "./storage";
 
 describe("parseLinkHeader", () => {
   it("returns next URL from a valid Link header", () => {
@@ -386,6 +388,195 @@ describe("getWorkflows", () => {
     );
 
     const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "error" });
+  });
+});
+
+describe("fetchAllEnvironments", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("returns environment names", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse({
+          total_count: 2,
+          environments: [
+            { id: 1, name: "prod-us" },
+            { id: 2, name: "staging" },
+          ],
+        }),
+      ),
+    );
+
+    const result = await fetchAllEnvironments("owner", "repo", null);
+    expect(result).toEqual([{ name: "prod-us" }, { name: "staging" }]);
+  });
+
+  it("requests the environments endpoint with per_page=100", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        mockFetchResponse({ total_count: 0, environments: [] }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAllEnvironments("owner", "repo", null);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://api.github.com/repos/owner/repo/environments?per_page=100",
+    );
+  });
+
+  it("follows pagination via Link headers", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        mockFetchResponse(
+          { total_count: 2, environments: [{ id: 1, name: "prod-us" }] },
+          {
+            linkHeader:
+              '<https://api.github.com/repos/owner/repo/environments?page=2&per_page=100>; rel="next"',
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        mockFetchResponse({
+          total_count: 2,
+          environments: [{ id: 2, name: "staging" }],
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await fetchAllEnvironments("owner", "repo", null);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toHaveLength(2);
+  });
+
+  it("sends auth header when token provided", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        mockFetchResponse({ total_count: 0, environments: [] }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchAllEnvironments("owner", "repo", "ghp_test123");
+    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
+    expect(callHeaders.Authorization).toBe("token ghp_test123");
+  });
+
+  it("throws GitHubApiError on non-ok response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse(null, {
+          ok: false,
+          status: 403,
+          statusText: "Forbidden",
+        }),
+      ),
+    );
+
+    await expect(fetchAllEnvironments("owner", "repo", null)).rejects.toThrow(
+      GitHubApiError,
+    );
+  });
+});
+
+describe("getEnvironments", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  beforeEach(() => {
+    fakeBrowser.reset();
+  });
+
+  it("returns cached environments when cache is fresh", async () => {
+    const environments = [{ name: "prod-us" }];
+    await environmentCache.set("owner", "repo", environments);
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: true, environments });
+  });
+
+  it("fetches from API when no cache, then caches result", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse({
+          total_count: 1,
+          environments: [{ id: 1, name: "prod-us" }],
+        }),
+      ),
+    );
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: true, environments: [{ name: "prod-us" }] });
+
+    const cached = await environmentCache.get("owner", "repo");
+    expect(cached?.items).toEqual([{ name: "prod-us" }]);
+  });
+
+  it("returns rate-limited on 403", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse(null, {
+          ok: false,
+          status: 403,
+          statusText: "Forbidden",
+        }),
+      ),
+    );
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "rate-limited" });
+  });
+
+  it("returns auth-required on 401", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse(null, {
+          ok: false,
+          status: 401,
+          statusText: "Unauthorized",
+        }),
+      ),
+    );
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "auth-required" });
+  });
+
+  it("returns auth-required on 404", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        mockFetchResponse(null, {
+          ok: false,
+          status: 404,
+          statusText: "Not Found",
+        }),
+      ),
+    );
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: false, reason: "auth-required" });
+  });
+
+  it("returns generic error on unexpected failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValueOnce(new Error("Network failure")),
+    );
+
+    const result = await getEnvironments("owner", "repo");
     expect(result).toEqual({ ok: false, reason: "error" });
   });
 });

@@ -1,4 +1,4 @@
-import { getWorkflows } from "@/lib/github-api";
+import { getEnvironments, getWorkflows } from "@/lib/github-api";
 import {
   collapsedStorage,
   enabledStorage,
@@ -46,6 +46,10 @@ export default defineBackground(() => {
     (message: ExtensionMessage, _sender, sendResponse) => {
       if (message.type === "GET_WORKFLOWS") {
         getWorkflows(message.owner, message.repo).then(sendResponse);
+        return true;
+      }
+      if (message.type === "GET_ENVIRONMENTS") {
+        getEnvironments(message.owner, message.repo).then(sendResponse);
         return true;
       }
     },
