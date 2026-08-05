@@ -10,12 +10,6 @@ const CONTAINER_CLASS = "grody-env-filter";
 // Hides React's env list while our filter is active without touching its DOM
 const HIDE_RULE = `.${CONTAINER_CLASS}[data-filtering] ~ ${ENV_NAV_SELECTOR} { display: none; }`;
 
-function parseRepo(): { owner: string; repo: string } | null {
-  const [owner, repo] = location.pathname.split("/").filter(Boolean);
-  if (!owner || !repo) return null;
-  return { owner, repo };
-}
-
 function hasShowMoreControl(nav: HTMLElement): boolean {
   return [...nav.querySelectorAll("a, button")].some((el) =>
     /show more environments/i.test(el.textContent ?? ""),
@@ -26,7 +20,10 @@ const definition: FeatureDefinition = {
   id: "env-filter",
   include: [isDeploymentsPage],
   reinitOnNavigation: true,
-  async init(_ctx, signal) {
+  async init(_ctx, page, signal) {
+    const { owner, repo } = page;
+    if (!owner || !repo) return;
+
     const nav = await waitForElement<HTMLElement>(ENV_NAV_SELECTOR, signal);
     if (!nav) {
       if (import.meta.env.DEV && !signal.aborted) {
@@ -38,9 +35,6 @@ const definition: FeatureDefinition = {
     if (signal.aborted) return;
 
     if (!hasShowMoreControl(nav)) return;
-
-    const repoInfo = parseRepo();
-    if (!repoInfo) return;
 
     const style = document.createElement("style");
     style.textContent = HIDE_RULE;
@@ -65,8 +59,8 @@ const definition: FeatureDefinition = {
     app = mount(EnvFilter, {
       target: container,
       props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
+        owner,
+        repo,
         container,
       },
     });

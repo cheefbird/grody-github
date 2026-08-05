@@ -14,6 +14,7 @@ export interface FeatureDefinition {
   reinitOnNavigation: boolean;
   init: (
     ctx: ContentScriptContext,
+    page: PageContext,
     signal: AbortSignal,
   ) => void | Promise<void>;
 }

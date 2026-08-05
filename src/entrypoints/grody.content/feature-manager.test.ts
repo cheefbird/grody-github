@@ -137,9 +137,29 @@ describe("createFeatureManager", () => {
 
     it("provides an AbortSignal to each feature init", async () => {
       const feature = makeFeature({
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           expect(signal).toBeInstanceOf(AbortSignal);
           expect(signal.aborted).toBe(false);
+        }),
+      });
+      const ctx = mockCtx();
+      const manager = createFeatureManager([feature], ctx);
+
+      await manager.run();
+
+      expect(feature.init).toHaveBeenCalledOnce();
+    });
+
+    it("provides the PageContext to each feature init", async () => {
+      vi.stubGlobal(
+        "location",
+        new URL("https://github.com/some-owner/some-repo"),
+      );
+      const feature = makeFeature({
+        init: vi.fn((_ctx, page, _signal) => {
+          expect(page.owner).toBe("some-owner");
+          expect(page.repo).toBe("some-repo");
+          expect(page.pathname).toBe("/some-owner/some-repo");
         }),
       });
       const ctx = mockCtx();
@@ -172,7 +192,7 @@ describe("createFeatureManager", () => {
       const feature = makeFeature({
         id: "no-reinit",
         reinitOnNavigation: false,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -194,7 +214,7 @@ describe("createFeatureManager", () => {
       const feature = makeFeature({
         id: "signal-test",
         reinitOnNavigation: true,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -233,7 +253,7 @@ describe("createFeatureManager", () => {
     it("aborts all active signals on context invalidation", async () => {
       let capturedSignal: AbortSignal | null = null;
       const feature = makeFeature({
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -255,7 +275,7 @@ describe("createFeatureManager", () => {
       const badFeature = makeFeature({
         id: "bad-teardown",
         reinitOnNavigation: true,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           signal.addEventListener("abort", () => {
             throw new Error("teardown boom");
           });

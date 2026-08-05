@@ -7,17 +7,14 @@ import WorkflowFilter from "./WorkflowFilter.svelte";
 const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
 
-function parseRepo(): { owner: string; repo: string } | null {
-  const [owner, repo] = location.pathname.split("/").filter(Boolean);
-  if (!owner || !repo) return null;
-  return { owner, repo };
-}
-
 const definition: FeatureDefinition = {
   id: "workflow-filter",
   include: [isActionsPage],
   reinitOnNavigation: true,
-  async init(_ctx, signal) {
+  async init(_ctx, page, signal) {
+    const { owner, repo } = page;
+    if (!owner || !repo) return;
+
     const navList = await waitForElement<HTMLElement>(
       SIDEBAR_NAV_SELECTOR,
       signal,
@@ -39,9 +36,6 @@ const definition: FeatureDefinition = {
     if (!showMore) return;
     const totalPages = Number(showMore.dataset.totalPages ?? "1");
     if (totalPages <= 1) return;
-
-    const repoInfo = parseRepo();
-    if (!repoInfo) return;
 
     const workflowsSection = navList.querySelector<HTMLElement>(
       ":scope > li:has(nav-list-group)",
@@ -65,8 +59,8 @@ const definition: FeatureDefinition = {
     app = mount(WorkflowFilter, {
       target: container,
       props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
+        owner,
+        repo,
         navList,
       },
     });
