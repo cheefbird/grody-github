@@ -11,6 +11,9 @@ if (!branch || !outPath) {
   process.exit(1);
 }
 
+process.env.GITHUB_EVENT_NAME = "push";
+process.env.GITHUB_REF = `refs/heads/${branch}`;
+
 const result = await semanticRelease({
   dryRun: true,
   ci: false,
