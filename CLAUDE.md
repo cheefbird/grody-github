@@ -28,8 +28,24 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 ## CI/CD
 
 - `ci.yml` — biome, tests, type check on push/PR
-- `release.yml` — builds zips, creates GitHub Release on v* tags
-- `publish.yml` — submits to Chrome/Firefox stores via `npx wxt submit`, gated by GitHub environment approvals
+- `release.yml` — semantic-release, run manually via workflow dispatch: bumps the
+  version, builds zips, tags, and creates a GitHub Release. Batches every
+  releasable commit since the last tag into one version
+- `release-preview.yml` — on PRs, comments the version and notes that would be cut.
+  Non-blocking and informational; it never publishes anything
+- `publish.yml` — submits to Chrome/Firefox stores via `npx wxt submit`, gated by
+  GitHub environment approvals
+- Releases are driven by commit type. Because merges are squashed, the **PR title**
+  is the commit semantic-release analyzes: `feat` → minor, `fix`/`perf`/`refactor`
+  → patch, everything else → no release
+- Use `ci:` for CI-only changes, **not** `fix(ci):`. The analyzer matches on type and
+  ignores scope, so `fix(ci):` cuts a patch release and lands in user-facing release
+  notes for a change no user can observe
+- A `!` or `BREAKING CHANGE:` footer jumps straight to `1.0.0` from `0.x` — and
+  store versions can never go back down, so that is a one-way door. Use it
+  deliberately. Note the squash body is built from the branch's commit messages, so
+  a `BREAKING CHANGE:` footer on **any** commit in the PR triggers it, even when the
+  PR title looks harmless
 - Pin all actions to full commit SHAs with version comments
 - Pass `${{ }}` expressions through `env:` vars in `run:` blocks (injection prevention)
 

@@ -34,24 +34,15 @@ jobs:
       - name: Resolve release tag
         id: tag
         run: |
-          if [ "$EVENT_NAME" = "release" ]; then
-            echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
-          else
-            TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
-            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          fi
+          TAG=$(gh release view --repo "$REPO" --json tagName -q .tagName)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-chrome:
     needs: resolve-tag
-    if: >-
-      github.event_name == 'release' ||
-      inputs.stores == 'chrome' ||
-      inputs.stores == 'all'
+    if: inputs.stores == 'chrome' || inputs.stores == 'all'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: chrome-store
@@ -104,10 +95,7 @@ jobs:
 
   publish-firefox:
     needs: resolve-tag
-    if: >-
-      github.event_name == 'release' ||
-      inputs.stores == 'firefox' ||
-      inputs.stores == 'all'
+    if: inputs.stores == 'firefox' || inputs.stores == 'all'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: firefox-store
@@ -168,10 +156,7 @@ jobs:
 
   publish-edge:
     needs: resolve-tag
-    if: >-
-      github.event_name == 'release' ||
-      inputs.stores == 'edge' ||
-      inputs.stores == 'all'
+    if: inputs.stores == 'edge' || inputs.stores == 'all'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     environment: edge-store
