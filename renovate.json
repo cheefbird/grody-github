@@ -9,7 +9,6 @@
   "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
   "prHourlyLimit": 0,
-  "separateMajorMinor": true,
   "major": {
     "dependencyDashboardApproval": true
   },
@@ -22,15 +21,31 @@
   },
   "packageRules": [
     {
-      "description": "Group extension framework (WXT + Svelte share peer deps)",
+      "description": "Group extension framework (WXT + Svelte share peer deps; vite and web-ext are wxt peer deps)",
       "matchPackageNames": [
         "wxt",
         "@wxt-dev/**",
         "svelte",
         "svelte-check",
-        "@tsconfig/svelte"
+        "@tsconfig/svelte",
+        "vite",
+        "web-ext"
       ],
       "groupName": "extension framework"
+    },
+    {
+      "description": "wxt is 0.x so minor bumps are breaking - gate the group's minors behind dashboard approval like majors",
+      "matchPackageNames": [
+        "wxt",
+        "@wxt-dev/**",
+        "svelte",
+        "svelte-check",
+        "@tsconfig/svelte",
+        "vite",
+        "web-ext"
+      ],
+      "matchUpdateTypes": ["minor"],
+      "dependencyDashboardApproval": true
     },
     {
       "description": "Group TypeScript ecosystem",
