@@ -32,6 +32,9 @@ importers:
       '@wxt-dev/module-svelte':
         specifier: 2.0.5
         version: 2.0.5(svelte@5.56.8)(vite@8.2.0(@types/node@26.1.2)(jiti@2.7.0))(wxt@0.21.3(eslint@9.39.4(jiti@2.7.0)(supports-color@7.2.0))(rolldown@1.2.2)(typescript@6.0.3)(vite@8.2.0(@types/node@26.1.2)(jiti@2.7.0))(web-ext@10.5.0(jiti@2.7.0)(supports-color@7.2.0)))
+      conventional-changelog-conventionalcommits:
+        specifier: 9.3.1
+        version: 9.3.1
       happy-dom:
         specifier: 20.11.1
         version: 20.11.1
@@ -983,6 +986,10 @@ packages:
 
   conventional-changelog-angular@8.3.1:
     resolution: {integrity: sha512-6gfI3otXK5Ph5DfCOI1dblr+kN3FAm5a97hYoQkqNZxOaYa5WKfXH+AnpsmS+iUH2mgVC2Cg2Qw9m5OKcmNrIg==}
+    engines: {node: '>=18'}
+
+  conventional-changelog-conventionalcommits@9.3.1:
+    resolution: {integrity: sha512-dTYtpIacRpcZgrvBYvBfArMmK2xvIpv2TaxM0/ZI5CBtNUzvF2x0t15HsbRABWprS6UPmvj+PzHVjSx4qAVKyw==}
     engines: {node: '>=18'}
 
   conventional-changelog-writer@8.4.0:
@@ -4128,6 +4135,10 @@ snapshots:
   content-type@2.0.0: {}
 
   conventional-changelog-angular@8.3.1:
+    dependencies:
+      compare-func: 2.0.0
+
+  conventional-changelog-conventionalcommits@9.3.1:
     dependencies:
       compare-func: 2.0.0
 

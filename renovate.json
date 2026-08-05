@@ -58,6 +58,11 @@
       "groupName": "test infrastructure"
     },
     {
+      "description": "Preset 10.x returns writer opts as `template` (conventional-changelog-writer v9). release-notes-generator still depends on writer v8, which reads `mainTemplate`, so 10.x silently renders release notes with no commit sections. Lift this once release-notes-generator moves to writer v9.",
+      "matchPackageNames": ["conventional-changelog-conventionalcommits"],
+      "allowedVersions": "<10"
+    },
+    {
       "description": "Node version updates keep existing precision (.nvmrc stays major.minor), no pinning to full patch",
       "matchDepNames": ["node"],
       "rangeStrategy": "replace"
