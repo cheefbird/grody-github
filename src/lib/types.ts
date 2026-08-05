@@ -20,3 +20,7 @@ export type ListCacheEntry<T> = {
 export type EnvironmentResult =
   | { ok: true; environments: Environment[] }
   | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
+
+export type ListResult<T> =
+  | { ok: true; items: T[] }
+  | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
