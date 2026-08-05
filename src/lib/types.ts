@@ -14,6 +14,7 @@ export type Environment = {
 export type ListCacheEntry<T> = {
   items: T[];
   timestamp: number;
+  tokenHash: string;
 };
 
 export type EnvironmentResult =

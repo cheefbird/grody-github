@@ -1,5 +1,10 @@
 import type { GetEnvironmentsMessage, GetWorkflowsMessage } from "./messages";
-import { environmentCache, tokenStorage, workflowCache } from "./storage";
+import {
+  environmentCache,
+  fingerprintToken,
+  tokenStorage,
+  workflowCache,
+} from "./storage";
 import type {
   Environment,
   EnvironmentResult,
@@ -82,12 +87,13 @@ export async function getWorkflows(
 ): Promise<WorkflowResult> {
   try {
     const token = (await tokenStorage.getValue()) || null;
+    const fingerprint = await fingerprintToken(token);
 
-    const cached = await workflowCache.get(owner, repo);
+    const cached = await workflowCache.get(owner, repo, fingerprint);
     if (cached) return { ok: true, workflows: cached.items };
 
     const workflows = await fetchAllWorkflows(owner, repo, token);
-    await workflowCache.set(owner, repo, workflows);
+    await workflowCache.set(owner, repo, workflows, fingerprint);
     return { ok: true, workflows };
   } catch (err) {
     console.error("[grody-github] Failed to fetch workflows:", err);
@@ -161,12 +167,13 @@ export async function getEnvironments(
 ): Promise<EnvironmentResult> {
   try {
     const token = (await tokenStorage.getValue()) || null;
+    const fingerprint = await fingerprintToken(token);
 
-    const cached = await environmentCache.get(owner, repo);
+    const cached = await environmentCache.get(owner, repo, fingerprint);
     if (cached) return { ok: true, environments: cached.items };
 
     const environments = await fetchAllEnvironments(owner, repo, token);
-    await environmentCache.set(owner, repo, environments);
+    await environmentCache.set(owner, repo, environments, fingerprint);
     return { ok: true, environments };
   } catch (err) {
     console.error("[grody-github] Failed to fetch environments:", err);

@@ -275,7 +275,7 @@ describe("getWorkflows", () => {
 
   it("returns cached workflows when cache is fresh", async () => {
     const workflows = [{ name: "CI", path: ".github/workflows/ci.yml" }];
-    await workflowCache.set("owner", "repo", workflows);
+    await workflowCache.set("owner", "repo", workflows, "");
 
     const result = await getWorkflows("owner", "repo");
     expect(result).toEqual({ ok: true, workflows });
@@ -498,7 +498,7 @@ describe("getEnvironments", () => {
 
   it("returns cached environments when cache is fresh", async () => {
     const environments = [{ name: "prod-us" }];
-    await environmentCache.set("owner", "repo", environments);
+    await environmentCache.set("owner", "repo", environments, "");
 
     const result = await getEnvironments("owner", "repo");
     expect(result).toEqual({ ok: true, environments });
@@ -518,7 +518,7 @@ describe("getEnvironments", () => {
     const result = await getEnvironments("owner", "repo");
     expect(result).toEqual({ ok: true, environments: [{ name: "prod-us" }] });
 
-    const cached = await environmentCache.get("owner", "repo");
+    const cached = await environmentCache.get("owner", "repo", "");
     expect(cached?.items).toEqual([{ name: "prod-us" }]);
   });
 
