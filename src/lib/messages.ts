@@ -1,4 +1,4 @@
-import type { EnvironmentResult, WorkflowResult } from "./types";
+import type { Environment, ListResult, Workflow } from "./types";
 
 export type GetWorkflowsMessage = {
   type: "GET_WORKFLOWS";
@@ -15,6 +15,6 @@ export type GetEnvironmentsMessage = {
 export type ExtensionMessage = GetWorkflowsMessage | GetEnvironmentsMessage;
 
 export type MessageResponseMap = {
-  GET_WORKFLOWS: WorkflowResult;
-  GET_ENVIRONMENTS: EnvironmentResult;
+  GET_WORKFLOWS: ListResult<Workflow>;
+  GET_ENVIRONMENTS: ListResult<Environment>;
 };

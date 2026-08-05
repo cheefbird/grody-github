@@ -1,32 +1,39 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 import { onMount } from "svelte";
-import { requestEnvironments } from "@/lib/github-api";
-import type { Environment, EnvironmentResult } from "@/lib/types";
+import type { SidebarFilterProps } from "@/lib/types";
 
 let {
-  owner,
-  repo,
+  fetch: fetchItems,
   container,
-}: { owner: string; repo: string; container: HTMLElement } = $props();
+  placeholder,
+  emptyText,
+  getSearchText,
+  getHref,
+  getLabel,
+  linkAttrs = {},
+}: SidebarFilterProps<T> = $props();
 
 let query = $state("");
-let environments: Environment[] = $state([]);
+let items: T[] = $state([]);
 let loaded = $state(false);
 let hint = $state<string | null>(null);
 let inputEl: HTMLInputElement | undefined = $state();
 
+const ariaLabel = $derived(placeholder.replace(/\.{3}$/, ""));
 const filtering = $derived(query.trim().length > 0);
 
 const filtered = $derived.by(() => {
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (terms.length === 0) return [];
-  return environments.filter((env) =>
-    terms.every((term) => env.name.toLowerCase().includes(term)),
-  );
+  return items.filter((item) => {
+    const text = getSearchText(item).toLowerCase();
+    return terms.every((term) => text.includes(term));
+  });
 });
 
-// React owns the nav we hide; the attribute lives on our container so the
-// injected stylesheet rule never has to touch React-managed elements.
+// The native list we hide is owned by GitHub (React on /deployments); the
+// attribute lives on our container so the injected stylesheet rule never
+// touches GitHub-managed elements.
 $effect(() => {
   container.toggleAttribute("data-filtering", filtering);
 });
@@ -37,8 +44,8 @@ function handleClear() {
 }
 
 onMount(() => {
-  requestEnvironments(owner, repo)
-    .then((result: EnvironmentResult) => {
+  fetchItems()
+    .then((result) => {
       if (!result.ok) {
         if (result.reason === "rate-limited") {
           hint = "Rate limited — add a token in extension options";
@@ -47,12 +54,12 @@ onMount(() => {
         }
         return;
       }
-      if (result.environments.length === 0) return;
-      environments = result.environments;
+      if (result.items.length === 0) return;
+      items = result.items;
       loaded = true;
     })
     .catch((err) => {
-      console.error("[grody-github] Env filter init failed:", err);
+      console.error("[grody-github] Sidebar filter init failed:", err);
     });
 
   return () => {
@@ -82,8 +89,8 @@ onMount(() => {
     <input
       bind:this={inputEl}
       type="search"
-      placeholder="Filter environments..."
-      aria-label="Filter environments"
+      {placeholder}
+      aria-label={ariaLabel}
       form=""
       bind:value={query}
     >
@@ -106,16 +113,14 @@ onMount(() => {
   </div>
   {#if filtering}
     <ul class="results">
-      {#each filtered as env (env.name)}
+      {#each filtered as item (getHref(item))}
         <li>
-          <a
-            href={`/${owner}/${repo}/deployments/${encodeURIComponent(env.name)}`}
-          >
-            {env.name}
+          <a href={getHref(item)} {...linkAttrs}>
+            {getLabel(item)}
           </a>
         </li>
       {:else}
-        <li class="empty"><em>No environments match your filter.</em></li>
+        <li class="empty"><em>{emptyText}</em></li>
       {/each}
     </ul>
   {/if}

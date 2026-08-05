@@ -44,7 +44,7 @@ export function createFeatureManager(
     activeControllers.set(feature.id, controller);
 
     try {
-      await feature.init(ctx, controller.signal);
+      await feature.init(ctx, pageCtx, controller.signal);
     } catch (err) {
       console.error(`[grody] feature "${feature.id}" failed to init:`, err);
       teardown(feature.id);

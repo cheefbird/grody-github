@@ -1,20 +1,19 @@
-import { mount, unmount } from "svelte";
+import { unmount } from "svelte";
+import {
+  type MountedSidebarFilter,
+  mountSidebarFilter,
+} from "@/lib/components/sidebar-filter";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
+import { requestEnvironments } from "@/lib/github-api";
+import type { Environment } from "@/lib/types";
 import { isDeploymentsPage } from "../../page-context";
-import EnvFilter from "./EnvFilter.svelte";
 
 const ENV_NAV_SELECTOR = 'nav[class*="environmentlist"]';
 const CONTAINER_CLASS = "grody-env-filter";
 
 // Hides React's env list while our filter is active without touching its DOM
 const HIDE_RULE = `.${CONTAINER_CLASS}[data-filtering] ~ ${ENV_NAV_SELECTOR} { display: none; }`;
-
-function parseRepo(): { owner: string; repo: string } | null {
-  const [owner, repo] = location.pathname.split("/").filter(Boolean);
-  if (!owner || !repo) return null;
-  return { owner, repo };
-}
 
 function hasShowMoreControl(nav: HTMLElement): boolean {
   return [...nav.querySelectorAll("a, button")].some((el) =>
@@ -26,7 +25,10 @@ const definition: FeatureDefinition = {
   id: "env-filter",
   include: [isDeploymentsPage],
   reinitOnNavigation: true,
-  async init(_ctx, signal) {
+  async init(_ctx, page, signal) {
+    const { owner, repo } = page;
+    if (!owner || !repo) return;
+
     const nav = await waitForElement<HTMLElement>(ENV_NAV_SELECTOR, signal);
     if (!nav) {
       if (import.meta.env.DEV && !signal.aborted) {
@@ -39,9 +41,6 @@ const definition: FeatureDefinition = {
 
     if (!hasShowMoreControl(nav)) return;
 
-    const repoInfo = parseRepo();
-    if (!repoInfo) return;
-
     const style = document.createElement("style");
     style.textContent = HIDE_RULE;
     document.head.append(style);
@@ -51,7 +50,7 @@ const definition: FeatureDefinition = {
     nav.before(container);
 
     // Registered before mount so a mount() throw still triggers cleanup
-    let app: ReturnType<typeof mount> | null = null;
+    let app: MountedSidebarFilter | null = null;
 
     signal.addEventListener("abort", () => {
       if (app) {
@@ -62,13 +61,14 @@ const definition: FeatureDefinition = {
       style.remove();
     });
 
-    app = mount(EnvFilter, {
-      target: container,
-      props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        container,
-      },
+    app = mountSidebarFilter<Environment>(container, {
+      fetch: () => requestEnvironments(owner, repo),
+      placeholder: "Filter environments...",
+      emptyText: "No environments match your filter.",
+      getSearchText: (env) => env.name,
+      getHref: (env) =>
+        `/${owner}/${repo}/deployments/${encodeURIComponent(env.name)}`,
+      getLabel: (env) => env.name,
     });
   },
 };

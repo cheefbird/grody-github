@@ -6,7 +6,7 @@ import StatusBannerHost from "./StatusBannerHost.svelte";
 const definition: FeatureDefinition = {
   id: "status-indicator",
   reinitOnNavigation: false,
-  async init(_ctx, signal) {
+  async init(_ctx, _page, signal) {
     const enabled = await enabledStorage.getValue();
     if (!enabled || signal.aborted) return;
 

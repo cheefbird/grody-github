@@ -1,23 +1,34 @@
-import { mount, unmount } from "svelte";
+import { unmount } from "svelte";
+import {
+  type MountedSidebarFilter,
+  mountSidebarFilter,
+} from "@/lib/components/sidebar-filter";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
+import { requestWorkflows } from "@/lib/github-api";
+import type { Workflow } from "@/lib/types";
 import { isActionsPage } from "../../page-context";
-import WorkflowFilter from "./WorkflowFilter.svelte";
 
 const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions Workflows"] ul';
 const SHOW_MORE_SELECTOR = '[data-action*="nav-list-group#showMore"]';
+const WORKFLOWS_SECTION_SELECTOR = ":scope > li:has(nav-list-group)";
+const CONTAINER_CLASS = "grody-workflow-filter";
 
-function parseRepo(): { owner: string; repo: string } | null {
-  const [owner, repo] = location.pathname.split("/").filter(Boolean);
-  if (!owner || !repo) return null;
-  return { owner, repo };
+// Hides only the workflows section while our filter is active
+const HIDE_RULE = `li.${CONTAINER_CLASS}[data-filtering] ~ li:has(nav-list-group) { display: none; }`;
+
+function workflowFilename(workflow: Workflow): string {
+  return workflow.path.split("/").pop() ?? "";
 }
 
 const definition: FeatureDefinition = {
   id: "workflow-filter",
   include: [isActionsPage],
   reinitOnNavigation: true,
-  async init(_ctx, signal) {
+  async init(_ctx, page, signal) {
+    const { owner, repo } = page;
+    if (!owner || !repo) return;
+
     const navList = await waitForElement<HTMLElement>(
       SIDEBAR_NAV_SELECTOR,
       signal,
@@ -40,19 +51,21 @@ const definition: FeatureDefinition = {
     const totalPages = Number(showMore.dataset.totalPages ?? "1");
     if (totalPages <= 1) return;
 
-    const repoInfo = parseRepo();
-    if (!repoInfo) return;
-
     const workflowsSection = navList.querySelector<HTMLElement>(
-      ":scope > li:has(nav-list-group)",
+      WORKFLOWS_SECTION_SELECTOR,
     );
     if (!workflowsSection) return;
 
-    const container = document.createElement("div");
+    const style = document.createElement("style");
+    style.textContent = HIDE_RULE;
+    document.head.append(style);
+
+    const container = document.createElement("li");
+    container.className = CONTAINER_CLASS;
     workflowsSection.before(container);
 
     // Registered before mount so a mount() throw still triggers cleanup
-    let app: ReturnType<typeof mount> | null = null;
+    let app: MountedSidebarFilter | null = null;
 
     signal.addEventListener("abort", () => {
       if (app) {
@@ -60,15 +73,19 @@ const definition: FeatureDefinition = {
         app = null;
       }
       container.remove();
+      style.remove();
     });
 
-    app = mount(WorkflowFilter, {
-      target: container,
-      props: {
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        navList,
-      },
+    app = mountSidebarFilter<Workflow>(container, {
+      fetch: () => requestWorkflows(owner, repo),
+      placeholder: "Filter workflows...",
+      emptyText: "No workflows match your filter.",
+      getSearchText: (workflow) =>
+        `${workflow.name} ${workflowFilename(workflow)}`,
+      getHref: (workflow) =>
+        `/${owner}/${repo}/actions/workflows/${encodeURIComponent(workflowFilename(workflow))}`,
+      getLabel: (workflow) => workflow.name,
+      linkAttrs: { "data-turbo-frame": "repo-content-turbo-frame" },
     });
   },
 };

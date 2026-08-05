@@ -135,19 +135,46 @@ describe("createFeatureManager", () => {
       expect(feature.init).toHaveBeenCalledOnce();
     });
 
+    // initFeature() swallows throws from init, so assert on the recorded call
+    // args rather than inside the init mock
     it("provides an AbortSignal to each feature init", async () => {
-      const feature = makeFeature({
-        init: vi.fn((_ctx, signal) => {
-          expect(signal).toBeInstanceOf(AbortSignal);
-          expect(signal.aborted).toBe(false);
-        }),
-      });
+      const feature = makeFeature();
       const ctx = mockCtx();
       const manager = createFeatureManager([feature], ctx);
 
       await manager.run();
 
       expect(feature.init).toHaveBeenCalledOnce();
+      expect(feature.init).toHaveBeenCalledWith(
+        ctx,
+        expect.anything(),
+        expect.any(AbortSignal),
+      );
+      const signal = vi.mocked(feature.init).mock.calls[0]?.[2];
+      expect(signal?.aborted).toBe(false);
+    });
+
+    it("provides the PageContext to each feature init", async () => {
+      vi.stubGlobal(
+        "location",
+        new URL("https://github.com/some-owner/some-repo"),
+      );
+      const feature = makeFeature();
+      const ctx = mockCtx();
+      const manager = createFeatureManager([feature], ctx);
+
+      await manager.run();
+
+      expect(feature.init).toHaveBeenCalledOnce();
+      expect(feature.init).toHaveBeenCalledWith(
+        ctx,
+        expect.objectContaining({
+          owner: "some-owner",
+          repo: "some-repo",
+          pathname: "/some-owner/some-repo",
+        }),
+        expect.any(AbortSignal),
+      );
     });
   });
 
@@ -172,7 +199,7 @@ describe("createFeatureManager", () => {
       const feature = makeFeature({
         id: "no-reinit",
         reinitOnNavigation: false,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -194,7 +221,7 @@ describe("createFeatureManager", () => {
       const feature = makeFeature({
         id: "signal-test",
         reinitOnNavigation: true,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -233,7 +260,7 @@ describe("createFeatureManager", () => {
     it("aborts all active signals on context invalidation", async () => {
       let capturedSignal: AbortSignal | null = null;
       const feature = makeFeature({
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           capturedSignal = signal;
         }),
       });
@@ -255,7 +282,7 @@ describe("createFeatureManager", () => {
       const badFeature = makeFeature({
         id: "bad-teardown",
         reinitOnNavigation: true,
-        init: vi.fn((_ctx, signal) => {
+        init: vi.fn((_ctx, _page, signal) => {
           signal.addEventListener("abort", () => {
             throw new Error("teardown boom");
           });

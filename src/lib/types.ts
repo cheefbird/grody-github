@@ -3,10 +3,6 @@ export type Workflow = {
   path: string;
 };
 
-export type WorkflowResult =
-  | { ok: true; workflows: Workflow[] }
-  | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
-
 export type Environment = {
   name: string;
 };
@@ -14,8 +10,20 @@ export type Environment = {
 export type ListCacheEntry<T> = {
   items: T[];
   timestamp: number;
+  tokenHash: string;
 };
 
-export type EnvironmentResult =
-  | { ok: true; environments: Environment[] }
+export type ListResult<T> =
+  | { ok: true; items: T[] }
   | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
+
+export type SidebarFilterProps<T> = {
+  fetch: () => Promise<ListResult<T>>;
+  container: HTMLElement;
+  placeholder: string;
+  emptyText: string;
+  getSearchText: (item: T) => string;
+  getHref: (item: T) => string;
+  getLabel: (item: T) => string;
+  linkAttrs?: Record<string, string>;
+};
