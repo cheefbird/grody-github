@@ -13,7 +13,8 @@ function makeProps(overrides: Record<string, unknown> = {}) {
   document.body.append(container);
   const items: Item[] = [
     { name: "CI" },
-    { name: "Deploy" },
+    { name: "Deploy Prod" },
+    { name: "Deploy Staging" },
     { name: "Release" },
   ];
   return {
@@ -63,14 +64,26 @@ describe("SidebarFilter", () => {
     expect(await screen.findByText(text)).toBeTruthy();
   });
 
-  it("filters items by search text, multi-term", async () => {
+  it("filters items by search text", async () => {
     const user = userEvent.setup();
     renderFilter(makeProps());
     const input = await screen.findByRole("searchbox");
 
     await user.type(input, "dep");
-    expect(await screen.findByText("Deploy")).toBeTruthy();
+    expect(await screen.findByText("Deploy Prod")).toBeTruthy();
+    expect(await screen.findByText("Deploy Staging")).toBeTruthy();
     expect(screen.queryByText("Release")).toBeNull();
+  });
+
+  it("requires every term to match the same item", async () => {
+    const user = userEvent.setup();
+    renderFilter(makeProps());
+    const input = await screen.findByRole("searchbox");
+
+    await user.type(input, "dep prod");
+    expect(await screen.findByText("Deploy Prod")).toBeTruthy();
+    expect(screen.queryByText("Deploy Staging")).toBeNull();
+    expect(screen.queryByText("CI")).toBeNull();
   });
 
   it("shows the empty state when nothing matches", async () => {

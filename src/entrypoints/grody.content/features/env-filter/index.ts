@@ -63,7 +63,6 @@ const definition: FeatureDefinition = {
 
     app = mountSidebarFilter<Environment>(container, {
       fetch: () => requestEnvironments(owner, repo),
-      container,
       placeholder: "Filter environments...",
       emptyText: "No environments match your filter.",
       getSearchText: (env) => env.name,

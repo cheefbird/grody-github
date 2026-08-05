@@ -4,12 +4,16 @@ import SidebarFilter from "./SidebarFilter.svelte";
 
 export type MountedSidebarFilter = ReturnType<typeof mount>;
 
+// The mount target is always the container the hide rule keys off of, so it's
+// derived here rather than passed twice.
 export function mountSidebarFilter<T>(
   target: HTMLElement,
-  props: SidebarFilterProps<T>,
+  props: Omit<SidebarFilterProps<T>, "container">,
 ): MountedSidebarFilter {
   return mount(SidebarFilter, {
     target,
-    props: props as ComponentProps<typeof SidebarFilter>,
+    props: { ...props, container: target } as ComponentProps<
+      typeof SidebarFilter
+    >,
   });
 }

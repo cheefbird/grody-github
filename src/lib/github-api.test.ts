@@ -247,6 +247,7 @@ describe("getWorkflows", () => {
 
     const result = await getWorkflows("owner", "repo");
     expect(alwaysPaginates).toHaveBeenCalledTimes(10);
+    expect(result.ok).toBe(true);
     expect(result.ok && result.items).toHaveLength(10);
   });
 

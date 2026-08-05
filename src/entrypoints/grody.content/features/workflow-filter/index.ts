@@ -78,13 +78,12 @@ const definition: FeatureDefinition = {
 
     app = mountSidebarFilter<Workflow>(container, {
       fetch: () => requestWorkflows(owner, repo),
-      container,
       placeholder: "Filter workflows...",
       emptyText: "No workflows match your filter.",
       getSearchText: (workflow) =>
         `${workflow.name} ${workflowFilename(workflow)}`,
       getHref: (workflow) =>
-        `/${owner}/${repo}/actions/workflows/${workflowFilename(workflow)}`,
+        `/${owner}/${repo}/actions/workflows/${encodeURIComponent(workflowFilename(workflow))}`,
       getLabel: (workflow) => workflow.name,
       linkAttrs: { "data-turbo-frame": "repo-content-turbo-frame" },
     });
