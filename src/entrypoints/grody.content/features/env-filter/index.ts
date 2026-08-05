@@ -1,8 +1,13 @@
-import { mount, unmount } from "svelte";
+import { unmount } from "svelte";
+import {
+  type MountedSidebarFilter,
+  mountSidebarFilter,
+} from "@/lib/components/sidebar-filter";
 import { waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
+import { requestEnvironments } from "@/lib/github-api";
+import type { Environment } from "@/lib/types";
 import { isDeploymentsPage } from "../../page-context";
-import EnvFilter from "./EnvFilter.svelte";
 
 const ENV_NAV_SELECTOR = 'nav[class*="environmentlist"]';
 const CONTAINER_CLASS = "grody-env-filter";
@@ -45,7 +50,7 @@ const definition: FeatureDefinition = {
     nav.before(container);
 
     // Registered before mount so a mount() throw still triggers cleanup
-    let app: ReturnType<typeof mount> | null = null;
+    let app: MountedSidebarFilter | null = null;
 
     signal.addEventListener("abort", () => {
       if (app) {
@@ -56,13 +61,15 @@ const definition: FeatureDefinition = {
       style.remove();
     });
 
-    app = mount(EnvFilter, {
-      target: container,
-      props: {
-        owner,
-        repo,
-        container,
-      },
+    app = mountSidebarFilter<Environment>(container, {
+      fetch: () => requestEnvironments(owner, repo),
+      container,
+      placeholder: "Filter environments...",
+      emptyText: "No environments match your filter.",
+      getSearchText: (env) => env.name,
+      getHref: (env) =>
+        `/${owner}/${repo}/deployments/${encodeURIComponent(env.name)}`,
+      getLabel: (env) => env.name,
     });
   },
 };

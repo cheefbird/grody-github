@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
 import { onMount } from "svelte";
-import type { ListResult } from "@/lib/types";
+import type { SidebarFilterProps } from "@/lib/types";
 
 let {
   fetch: fetchItems,
@@ -11,16 +11,7 @@ let {
   getHref,
   getLabel,
   linkAttrs = {},
-}: {
-  fetch: () => Promise<ListResult<T>>;
-  container: HTMLElement;
-  placeholder: string;
-  emptyText: string;
-  getSearchText: (item: T) => string;
-  getHref: (item: T) => string;
-  getLabel: (item: T) => string;
-  linkAttrs?: Record<string, string>;
-} = $props();
+}: SidebarFilterProps<T> = $props();
 
 let query = $state("");
 let items: T[] = $state([]);
