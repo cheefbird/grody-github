@@ -1,0 +1,57 @@
+{
+  "$schema": "https://www.schemastore.org/semantic-release.json",
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "preset": "conventionalcommits",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      { "releaseRules": [{ "type": "refactor", "release": "patch" }] }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "Features" },
+            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "perf", "section": "Performance Improvements" },
+            { "type": "refactor", "section": "Code Refactoring" },
+            { "type": "revert", "section": "Reverts" },
+            { "type": "docs", "hidden": true },
+            { "type": "style", "hidden": true },
+            { "type": "chore", "hidden": true },
+            { "type": "test", "hidden": true },
+            { "type": "build", "hidden": true },
+            { "type": "ci", "hidden": true }
+          ]
+        }
+      }
+    ],
+    ["@semantic-release/npm", { "npmPublish": false }],
+    [
+      "@semantic-release/exec",
+      { "prepareCmd": "pnpm zip && pnpm zip:firefox && pnpm zip:edge" }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": ".output/*-chrome.zip" },
+          { "path": ".output/*-firefox.zip" },
+          { "path": ".output/*-edge.zip" },
+          { "path": ".output/*-sources.zip" }
+        ],
+        "successCommentCondition": false,
+        "failCommentCondition": false
+      }
+    ]
+  ]
+}
