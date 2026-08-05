@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fakeBrowser } from "wxt/testing/fake-browser";
 import {
   createCachedListFetcher,
-  fetchAllEnvironments,
-  fetchAllWorkflows,
   GitHubApiError,
   getEnvironments,
   getWorkflows,
@@ -86,41 +84,61 @@ function mockFetchResponse(
   } as Response;
 }
 
-describe("fetchAllWorkflows", () => {
+describe("getWorkflows", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
-  it("returns active workflows with paths", async () => {
+  beforeEach(() => {
+    fakeBrowser.reset();
+  });
+
+  it("returns cached workflows when cache is fresh", async () => {
+    const workflows = [{ name: "CI", path: ".github/workflows/ci.yml" }];
+    await workflowCache.set("owner", "repo", workflows, "");
+
+    const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({ ok: true, items: workflows });
+  });
+
+  it("fetches from API when no cache, then caches result", async () => {
+    const workflows = [
+      { id: 1, name: "CI", path: ".github/workflows/ci.yml", state: "active" },
+    ];
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValueOnce(
-        mockFetchResponse({
-          total_count: 2,
-          workflows: [
-            {
-              id: 1,
-              name: "CI",
-              path: ".github/workflows/ci.yml",
-              state: "active",
-            },
-            {
-              id: 2,
-              name: "Deploy",
-              path: ".github/workflows/deploy.yml",
-              state: "active",
-            },
-          ],
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          mockFetchResponse({ total_count: 1, workflows }),
+        ),
     );
 
-    const result = await fetchAllWorkflows("owner", "repo", null);
-    expect(result).toEqual([
+    const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({
+      ok: true,
+      items: [{ name: "CI", path: ".github/workflows/ci.yml" }],
+    });
+
+    const cached = await workflowCache.get("owner", "repo", "");
+    expect(cached?.items).toEqual([
       { name: "CI", path: ".github/workflows/ci.yml" },
-      { name: "Deploy", path: ".github/workflows/deploy.yml" },
     ]);
+  });
+
+  it("requests the workflows endpoint with per_page=100", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        mockFetchResponse({ total_count: 0, workflows: [] }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getWorkflows("owner", "repo");
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
+      "https://api.github.com/repos/owner/repo/actions/workflows?per_page=100",
+    );
   });
 
   it("filters out inactive workflows and workflows without paths", async () => {
@@ -148,8 +166,11 @@ describe("fetchAllWorkflows", () => {
       ),
     );
 
-    const result = await fetchAllWorkflows("owner", "repo", null);
-    expect(result).toEqual([{ name: "CI", path: ".github/workflows/ci.yml" }]);
+    const result = await getWorkflows("owner", "repo");
+    expect(result).toEqual({
+      ok: true,
+      items: [{ name: "CI", path: ".github/workflows/ci.yml" }],
+    });
   });
 
   it("follows pagination via Link headers", async () => {
@@ -187,12 +208,17 @@ describe("fetchAllWorkflows", () => {
           ],
         }),
       );
-
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await fetchAllWorkflows("owner", "repo", null);
+    const result = await getWorkflows("owner", "repo");
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(result).toHaveLength(2);
+    expect(result).toEqual({
+      ok: true,
+      items: [
+        { name: "CI", path: ".github/workflows/ci.yml" },
+        { name: "Deploy", path: ".github/workflows/deploy.yml" },
+      ],
+    });
   });
 
   it("stops after MAX_PAGES to prevent infinite pagination", async () => {
@@ -217,32 +243,15 @@ describe("fetchAllWorkflows", () => {
         ),
       ),
     );
-
     vi.stubGlobal("fetch", alwaysPaginates);
 
-    const result = await fetchAllWorkflows("owner", "repo", null);
+    const result = await getWorkflows("owner", "repo");
     expect(alwaysPaginates).toHaveBeenCalledTimes(10);
-    expect(result).toHaveLength(10);
+    expect(result.ok && result.items).toHaveLength(10);
   });
 
-  it("throws GitHubApiError on non-ok response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce(
-        mockFetchResponse(null, {
-          ok: false,
-          status: 403,
-          statusText: "Forbidden",
-        }),
-      ),
-    );
-
-    await expect(fetchAllWorkflows("owner", "repo", null)).rejects.toThrow(
-      GitHubApiError,
-    );
-  });
-
-  it("sends auth header when token provided", async () => {
+  it("sends auth header when a token is stored", async () => {
+    await tokenStorage.setValue("ghp_test123");
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -250,12 +259,13 @@ describe("fetchAllWorkflows", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await fetchAllWorkflows("owner", "repo", "ghp_test123");
-    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
-    expect(callHeaders.Authorization).toBe("token ghp_test123");
+    await getWorkflows("owner", "repo");
+    expect(fetchMock.mock.calls[0]?.[1].headers.Authorization).toBe(
+      "token ghp_test123",
+    );
   });
 
-  it("omits auth header when token is null", async () => {
+  it("omits auth header when no token is stored", async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -263,48 +273,8 @@ describe("fetchAllWorkflows", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await fetchAllWorkflows("owner", "repo", null);
-    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
-    expect(callHeaders.Authorization).toBeUndefined();
-  });
-});
-
-describe("getWorkflows", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-  });
-
-  beforeEach(() => {
-    fakeBrowser.reset();
-  });
-
-  it("returns cached workflows when cache is fresh", async () => {
-    const workflows = [{ name: "CI", path: ".github/workflows/ci.yml" }];
-    await workflowCache.set("owner", "repo", workflows, "");
-
-    const result = await getWorkflows("owner", "repo");
-    expect(result).toEqual({ ok: true, workflows });
-  });
-
-  it("fetches from API when no cache, then caches result", async () => {
-    const workflows = [
-      { id: 1, name: "CI", path: ".github/workflows/ci.yml", state: "active" },
-    ];
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          mockFetchResponse({ total_count: 1, workflows }),
-        ),
-    );
-
-    const result = await getWorkflows("owner", "repo");
-    expect(result).toEqual({
-      ok: true,
-      workflows: [{ name: "CI", path: ".github/workflows/ci.yml" }],
-    });
+    await getWorkflows("owner", "repo");
+    expect(fetchMock.mock.calls[0]?.[1].headers.Authorization).toBeUndefined();
   });
 
   it("returns rate-limited on 403", async () => {
@@ -398,13 +368,25 @@ describe("getWorkflows", () => {
   });
 });
 
-describe("fetchAllEnvironments", () => {
+describe("getEnvironments", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
-  it("returns environment names", async () => {
+  beforeEach(() => {
+    fakeBrowser.reset();
+  });
+
+  it("returns cached environments when cache is fresh", async () => {
+    const environments = [{ name: "prod-us" }];
+    await environmentCache.set("owner", "repo", environments, "");
+
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({ ok: true, items: environments });
+  });
+
+  it("fetches from API when no cache, then caches result", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValueOnce(
@@ -418,8 +400,14 @@ describe("fetchAllEnvironments", () => {
       ),
     );
 
-    const result = await fetchAllEnvironments("owner", "repo", null);
-    expect(result).toEqual([{ name: "prod-us" }, { name: "staging" }]);
+    const result = await getEnvironments("owner", "repo");
+    expect(result).toEqual({
+      ok: true,
+      items: [{ name: "prod-us" }, { name: "staging" }],
+    });
+
+    const cached = await environmentCache.get("owner", "repo", "");
+    expect(cached?.items).toEqual([{ name: "prod-us" }, { name: "staging" }]);
   });
 
   it("requests the environments endpoint with per_page=100", async () => {
@@ -430,7 +418,7 @@ describe("fetchAllEnvironments", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await fetchAllEnvironments("owner", "repo", null);
+    await getEnvironments("owner", "repo");
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "https://api.github.com/repos/owner/repo/environments?per_page=100",
     );
@@ -456,12 +444,16 @@ describe("fetchAllEnvironments", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await fetchAllEnvironments("owner", "repo", null);
+    const result = await getEnvironments("owner", "repo");
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(result).toHaveLength(2);
+    expect(result).toEqual({
+      ok: true,
+      items: [{ name: "prod-us" }, { name: "staging" }],
+    });
   });
 
-  it("sends auth header when token provided", async () => {
+  it("sends auth header when a token is stored", async () => {
+    await tokenStorage.setValue("ghp_test123");
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
@@ -469,63 +461,10 @@ describe("fetchAllEnvironments", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await fetchAllEnvironments("owner", "repo", "ghp_test123");
-    const callHeaders = fetchMock.mock.calls[0]?.[1].headers;
-    expect(callHeaders.Authorization).toBe("token ghp_test123");
-  });
-
-  it("throws GitHubApiError on non-ok response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce(
-        mockFetchResponse(null, {
-          ok: false,
-          status: 403,
-          statusText: "Forbidden",
-        }),
-      ),
+    await getEnvironments("owner", "repo");
+    expect(fetchMock.mock.calls[0]?.[1].headers.Authorization).toBe(
+      "token ghp_test123",
     );
-
-    await expect(fetchAllEnvironments("owner", "repo", null)).rejects.toThrow(
-      GitHubApiError,
-    );
-  });
-});
-
-describe("getEnvironments", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-  });
-
-  beforeEach(() => {
-    fakeBrowser.reset();
-  });
-
-  it("returns cached environments when cache is fresh", async () => {
-    const environments = [{ name: "prod-us" }];
-    await environmentCache.set("owner", "repo", environments, "");
-
-    const result = await getEnvironments("owner", "repo");
-    expect(result).toEqual({ ok: true, environments });
-  });
-
-  it("fetches from API when no cache, then caches result", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce(
-        mockFetchResponse({
-          total_count: 1,
-          environments: [{ id: 1, name: "prod-us" }],
-        }),
-      ),
-    );
-
-    const result = await getEnvironments("owner", "repo");
-    expect(result).toEqual({ ok: true, environments: [{ name: "prod-us" }] });
-
-    const cached = await environmentCache.get("owner", "repo", "");
-    expect(cached?.items).toEqual([{ name: "prod-us" }]);
   });
 
   it("returns rate-limited on 403", async () => {

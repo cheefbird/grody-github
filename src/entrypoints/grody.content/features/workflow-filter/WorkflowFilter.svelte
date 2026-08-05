@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { requestWorkflows } from "@/lib/github-api";
-import type { Workflow, WorkflowResult } from "@/lib/types";
+import type { ListResult, Workflow } from "@/lib/types";
 
 let {
   owner,
@@ -114,7 +114,7 @@ onMount(() => {
   cloneOriginalChildren();
 
   requestWorkflows(owner, repo)
-    .then((result: WorkflowResult) => {
+    .then((result: ListResult<Workflow>) => {
       if (!result.ok) {
         if (result.reason === "rate-limited") {
           hint = "Rate limited — add a token in extension options";
@@ -123,8 +123,8 @@ onMount(() => {
         }
         return;
       }
-      if (result.workflows.length === 0) return;
-      workflows = result.workflows;
+      if (result.items.length === 0) return;
+      workflows = result.items;
       loaded = true;
       if (showMoreContainer) {
         showMoreContainer.hidden = true;

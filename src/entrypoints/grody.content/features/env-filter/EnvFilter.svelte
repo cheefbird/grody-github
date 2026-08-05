@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte";
 import { requestEnvironments } from "@/lib/github-api";
-import type { Environment, EnvironmentResult } from "@/lib/types";
+import type { Environment, ListResult } from "@/lib/types";
 
 let {
   owner,
@@ -38,7 +38,7 @@ function handleClear() {
 
 onMount(() => {
   requestEnvironments(owner, repo)
-    .then((result: EnvironmentResult) => {
+    .then((result: ListResult<Environment>) => {
       if (!result.ok) {
         if (result.reason === "rate-limited") {
           hint = "Rate limited — add a token in extension options";
@@ -47,8 +47,8 @@ onMount(() => {
         }
         return;
       }
-      if (result.environments.length === 0) return;
-      environments = result.environments;
+      if (result.items.length === 0) return;
+      environments = result.items;
       loaded = true;
     })
     .catch((err) => {

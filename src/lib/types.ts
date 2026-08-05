@@ -3,10 +3,6 @@ export type Workflow = {
   path: string;
 };
 
-export type WorkflowResult =
-  | { ok: true; workflows: Workflow[] }
-  | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
-
 export type Environment = {
   name: string;
 };
@@ -16,10 +12,6 @@ export type ListCacheEntry<T> = {
   timestamp: number;
   tokenHash: string;
 };
-
-export type EnvironmentResult =
-  | { ok: true; environments: Environment[] }
-  | { ok: false; reason: "rate-limited" | "auth-required" | "error" };
 
 export type ListResult<T> =
   | { ok: true; items: T[] }

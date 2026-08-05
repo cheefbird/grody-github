@@ -6,13 +6,7 @@ import {
   tokenStorage,
   workflowCache,
 } from "./storage";
-import type {
-  Environment,
-  EnvironmentResult,
-  ListResult,
-  Workflow,
-  WorkflowResult,
-} from "./types";
+import type { Environment, ListResult, Workflow } from "./types";
 
 type WorkflowApiResponse = {
   total_count: number;
@@ -21,6 +15,14 @@ type WorkflowApiResponse = {
     name: string;
     path: string;
     state: string;
+  }>;
+};
+
+type EnvironmentApiResponse = {
+  total_count: number;
+  environments: Array<{
+    id: number;
+    name: string;
   }>;
 };
 
@@ -114,156 +116,42 @@ export function createCachedListFetcher<T>(opts: {
   };
 }
 
-export async function fetchAllWorkflows(
-  owner: string,
-  repo: string,
-  token: string | null,
-): Promise<Workflow[]> {
-  const workflows: Workflow[] = [];
-  let url: string | null =
-    `https://api.github.com/repos/${owner}/${repo}/actions/workflows?per_page=100`;
-  let page = 0;
+export const getWorkflows = createCachedListFetcher<Workflow>({
+  cache: workflowCache,
+  buildUrl: (owner, repo) =>
+    `https://api.github.com/repos/${owner}/${repo}/actions/workflows?per_page=100`,
+  parsePage: (json) => {
+    const data = json as WorkflowApiResponse;
+    return data.workflows
+      .filter((w) => w.state === "active" && w.path)
+      .map((w) => ({ name: w.name, path: w.path }));
+  },
+  label: "workflows",
+});
 
-  while (url && page < MAX_PAGES) {
-    page++;
-    const headers: Record<string, string> = {
-      Accept: "application/vnd.github.v3+json",
-    };
-    if (token) {
-      headers.Authorization = `token ${token}`;
-    }
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new GitHubApiError(response.status, response.statusText);
-    }
-
-    const data: WorkflowApiResponse = await response.json();
-
-    for (const workflow of data.workflows) {
-      if (workflow.state === "active" && workflow.path) {
-        workflows.push({ name: workflow.name, path: workflow.path });
-      }
-    }
-
-    url = parseLinkHeader(response.headers.get("Link"));
-  }
-
-  return workflows;
-}
-
-export async function getWorkflows(
-  owner: string,
-  repo: string,
-): Promise<WorkflowResult> {
-  try {
-    const token = (await tokenStorage.getValue()) || null;
-    const fingerprint = await fingerprintToken(token);
-
-    const cached = await workflowCache.get(owner, repo, fingerprint);
-    if (cached) return { ok: true, workflows: cached.items };
-
-    const workflows = await fetchAllWorkflows(owner, repo, token);
-    await workflowCache.set(owner, repo, workflows, fingerprint);
-    return { ok: true, workflows };
-  } catch (err) {
-    console.error("[grody-github] Failed to fetch workflows:", err);
-
-    if (err instanceof GitHubApiError) {
-      if (err.status === 403) return { ok: false, reason: "rate-limited" };
-      if (err.status === 401 || err.status === 404) {
-        return { ok: false, reason: "auth-required" };
-      }
-    }
-
-    return { ok: false, reason: "error" };
-  }
-}
+export const getEnvironments = createCachedListFetcher<Environment>({
+  cache: environmentCache,
+  buildUrl: (owner, repo) =>
+    `https://api.github.com/repos/${owner}/${repo}/environments?per_page=100`,
+  parsePage: (json) => {
+    const data = json as EnvironmentApiResponse;
+    return data.environments.map((e) => ({ name: e.name }));
+  },
+  label: "environments",
+});
 
 export async function requestWorkflows(
   owner: string,
   repo: string,
-): Promise<WorkflowResult> {
+): Promise<ListResult<Workflow>> {
   const message: GetWorkflowsMessage = { type: "GET_WORKFLOWS", owner, repo };
   return browser.runtime.sendMessage(message);
-}
-
-type EnvironmentApiResponse = {
-  total_count: number;
-  environments: Array<{
-    id: number;
-    name: string;
-  }>;
-};
-
-export async function fetchAllEnvironments(
-  owner: string,
-  repo: string,
-  token: string | null,
-): Promise<Environment[]> {
-  const environments: Environment[] = [];
-  let url: string | null =
-    `https://api.github.com/repos/${owner}/${repo}/environments?per_page=100`;
-  let page = 0;
-
-  while (url && page < MAX_PAGES) {
-    page++;
-    const headers: Record<string, string> = {
-      Accept: "application/vnd.github.v3+json",
-    };
-    if (token) {
-      headers.Authorization = `token ${token}`;
-    }
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new GitHubApiError(response.status, response.statusText);
-    }
-
-    const data: EnvironmentApiResponse = await response.json();
-
-    for (const environment of data.environments) {
-      environments.push({ name: environment.name });
-    }
-
-    url = parseLinkHeader(response.headers.get("Link"));
-  }
-
-  return environments;
-}
-
-export async function getEnvironments(
-  owner: string,
-  repo: string,
-): Promise<EnvironmentResult> {
-  try {
-    const token = (await tokenStorage.getValue()) || null;
-    const fingerprint = await fingerprintToken(token);
-
-    const cached = await environmentCache.get(owner, repo, fingerprint);
-    if (cached) return { ok: true, environments: cached.items };
-
-    const environments = await fetchAllEnvironments(owner, repo, token);
-    await environmentCache.set(owner, repo, environments, fingerprint);
-    return { ok: true, environments };
-  } catch (err) {
-    console.error("[grody-github] Failed to fetch environments:", err);
-
-    if (err instanceof GitHubApiError) {
-      if (err.status === 403) return { ok: false, reason: "rate-limited" };
-      if (err.status === 401 || err.status === 404) {
-        return { ok: false, reason: "auth-required" };
-      }
-    }
-
-    return { ok: false, reason: "error" };
-  }
 }
 
 export async function requestEnvironments(
   owner: string,
   repo: string,
-): Promise<EnvironmentResult> {
+): Promise<ListResult<Environment>> {
   const message: GetEnvironmentsMessage = {
     type: "GET_ENVIRONMENTS",
     owner,
