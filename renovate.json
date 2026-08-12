@@ -5,6 +5,7 @@
     "helpers:pinGitHubActionDigestsToSemver",
     "mergeConfidence:all-badges",
     "workarounds:all",
+    "customManagers:biomeVersions",
     ":semanticCommitTypeAll(chore)"
   ],
   "schedule": ["after 4pm", "before 8am"],
