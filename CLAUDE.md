@@ -35,6 +35,13 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
   Non-blocking and informational; it never publishes anything
 - `publish.yml` — submits to Chrome/Firefox stores via `npx wxt submit`, gated by
   GitHub environment approvals
+- Chrome store auth is an OAuth refresh token (`CHROME_REFRESH_TOKEN`, environment
+  secret on `chrome-store`). The GCP OAuth app must be **In production** — in
+  Testing status Google revokes refresh tokens after 7 days. "In production +
+  unverified" is the intended end state: never submit for verification, ignore the
+  nag emails. To re-mint: `npx wxt submit init`, then click Advanced → "Go to
+  \<app\> (unsafe)" on the unverified-app screen. Token only dies after ~6 months
+  of no use
 - Releases are driven by commit type. Because merges are squashed, the **PR title**
   is the commit semantic-release analyzes: `feat` → minor, `fix`/`perf`/`refactor`
   → patch, `chore(deps)` → patch, everything else → no release
