@@ -31,7 +31,7 @@ ${next.notes}`
 ### Release preview
 
 No release would be cut from this branch — most likely because no commit since the
-last tag carries a releasing type (\`feat\`, \`fix\`, \`perf\`, or \`refactor\`).
+last tag carries a releasing type (\`feat\`, \`fix\`, \`perf\`, \`refactor\`, or \`chore(deps)\`).
 
 semantic-release also reports no release when it short-circuits for other reasons, so
 if that looks wrong, check the \`Compute release preview\` step's log for the reason.`;

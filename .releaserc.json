@@ -6,7 +6,12 @@
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
-      { "releaseRules": [{ "type": "refactor", "release": "patch" }] }
+      {
+        "releaseRules": [
+          { "type": "refactor", "release": "patch" },
+          { "type": "chore", "scope": "deps", "release": "patch" }
+        ]
+      }
     ],
     [
       "@semantic-release/release-notes-generator",
@@ -18,6 +23,7 @@
             { "type": "perf", "section": "Performance Improvements" },
             { "type": "refactor", "section": "Code Refactoring" },
             { "type": "revert", "section": "Reverts" },
+            { "type": "chore", "scope": "deps", "section": "Dependencies" },
             { "type": "docs", "hidden": true },
             { "type": "style", "hidden": true },
             { "type": "chore", "hidden": true },

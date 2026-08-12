@@ -37,10 +37,20 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
   GitHub environment approvals
 - Releases are driven by commit type. Because merges are squashed, the **PR title**
   is the commit semantic-release analyzes: `feat` → minor, `fix`/`perf`/`refactor`
-  → patch, everything else → no release
-- Use `ci:` for CI-only changes, **not** `fix(ci):`. The analyzer matches on type and
-  ignores scope, so `fix(ci):` cuts a patch release and lands in user-facing release
-  notes for a change no user can observe
+  → patch, `chore(deps)` → patch, everything else → no release
+- `chore(deps)` is the one rule where the **scope is load-bearing**. Renovate emits
+  that scope by default, so its PRs cut patches and land in a "Dependencies" section.
+  Bare `chore:` and any other scope (`chore(renovate):`, and semantic-release's own
+  `chore(release):` commit) release nothing and stay out of the notes. Keep the scope
+  if you want a dep bump to ship
+- `renovate.json` pins `:semanticCommitTypeAll(chore)` **last** in `extends` (later
+  presets win) so every bot PR stays in that one lane. Without it, `config:recommended`
+  switches to `fix(deps)` for production deps — which would still cut a patch, but would
+  render under "Bug Fixes" instead of "Dependencies". Only bites once `dependencies` in
+  `package.json` is non-empty; it is empty today
+- Use `ci:` for CI-only changes, **not** `fix(ci):`. Every rule except `chore(deps)`
+  matches on type alone, so `fix(ci):` cuts a patch release and lands in user-facing
+  release notes for a change no user can observe
 - A `!` or `BREAKING CHANGE:` footer jumps straight to `1.0.0` from `0.x` — and
   store versions can never go back down, so that is a one-way door. Use it
   deliberately. Note the squash body is built from the branch's commit messages, so
