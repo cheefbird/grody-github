@@ -7,8 +7,9 @@
 Filter your long lists of workflows and deployment environments in GitHub! Know about GitHub incidents before you start blaming your code! And more to come.
 
 <p align="center">
-  <a href="https://chromewebstore.google.com/detail/pbghkjaknoiilominkjgmfjeoobkhfkn"><img src="https://badgen.net/chrome-web-store/v/pbghkjaknoiilominkjgmfjeoobkhfkn?icon=chrome&color=blue" alt="Chrome Web Store" /></a>
-  <a href="https://addons.mozilla.org/en-US/firefox/addon/grody-github/"><img src="https://badgen.net/amo/v/grody-github?icon=firefox" alt="Firefox Addon Marketplace" /></a>
+  <a href="https://chromewebstore.google.com/detail/pbghkjaknoiilominkjgmfjeoobkhfkn"><img src="https://flat.badgen.net/chrome-web-store/v/pbghkjaknoiilominkjgmfjeoobkhfkn?icon=chrome&color=blue" alt="Chrome Web Store" /></a>
+  <a href="https://addons.mozilla.org/en-US/firefox/addon/grody-github/"><img src="https://flat.badgen.net/amo/v/grody-github?icon=firefox" alt="Firefox Addon Marketplace" /></a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/ocdgbejihbgenjnienkdfdfpdcojalfh"><img src="https://flat.badgen.net/edge-addons/v/ocdgbejihbgenjnienkdfdfpdcojalfh?icon=windows&color=blue" alt="Edge Addon Store" /></a>
 </p>
 
 ---
