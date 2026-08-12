@@ -4,7 +4,8 @@
     "config:best-practices",
     "helpers:pinGitHubActionDigestsToSemver",
     "mergeConfidence:all-badges",
-    "workarounds:all"
+    "workarounds:all",
+    ":semanticCommitTypeAll(chore)"
   ],
   "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,

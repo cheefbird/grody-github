@@ -43,6 +43,11 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
   Bare `chore:` and any other scope (`chore(renovate):`, and semantic-release's own
   `chore(release):` commit) release nothing and stay out of the notes. Keep the scope
   if you want a dep bump to ship
+- `renovate.json` pins `:semanticCommitTypeAll(chore)` **last** in `extends` (later
+  presets win) so every bot PR stays in that one lane. Without it, `config:recommended`
+  switches to `fix(deps)` for production deps — which would still cut a patch, but would
+  render under "Bug Fixes" instead of "Dependencies". Only bites once `dependencies` in
+  `package.json` is non-empty; it is empty today
 - Use `ci:` for CI-only changes, **not** `fix(ci):`. Every rule except `chore(deps)`
   matches on type alone, so `fix(ci):` cuts a patch release and lands in user-facing
   release notes for a change no user can observe
