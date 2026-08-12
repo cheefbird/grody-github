@@ -31,6 +31,9 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 - `release.yml` — semantic-release, run manually via workflow dispatch: bumps the
   version, builds zips, tags, and creates a GitHub Release. Batches every
   releasable commit since the last tag into one version
+- `@semantic-release/changelog` maintains `CHANGELOG.md` at the repo root — each
+  release prepends its notes, committed in the `chore(release)` commit alongside
+  `package.json`
 - `release-preview.yml` — on PRs, comments the version and notes that would be cut.
   Non-blocking and informational; it never publishes anything
 - `publish.yml` — submits to Chrome/Firefox stores via `npx wxt submit`, gated by

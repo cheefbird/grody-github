@@ -34,6 +34,7 @@
         }
       }
     ],
+    ["@semantic-release/changelog", { "changelogTitle": "# Changelog" }],
     ["@semantic-release/npm", { "npmPublish": false }],
     [
       "@semantic-release/exec",
@@ -42,7 +43,7 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["package.json"],
+        "assets": ["package.json", "CHANGELOG.md"],
         "message": "chore(release): ${nextRelease.version} [skip ci]"
       }
     ],
