@@ -1,3 +1,5 @@
 allowBuilds:
-  esbuild: false 
+  esbuild: false
   spawn-sync: false
+minimumReleaseAgeExclude:
+  - wxt@0.21.4
