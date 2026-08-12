@@ -13,8 +13,21 @@ export default defineConfig({
   },
   zip: {
     name: "grody-github",
-    artifactTemplate: "{{name}}-v{{version}}-{{browser}}.zip",
-    sourcesTemplate: "{{name}}-v{{version}}-sources.zip",
+    artifactTemplate:
+      "{{name}}-v{{packageVersion}}-{{browser}}{{modeSuffix}}.zip",
+    sourcesTemplate: "{{name}}-v{{packageVersion}}-sources{{modeSuffix}}.zip",
+    includeSources: [
+      "src",
+      "public",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "wxt.config.ts",
+      "tsconfig.json",
+      "wxt-env.d.ts",
+      "README.md",
+      "LICENSE",
+    ],
   },
   manifest: {
     name: "Grody Github",
