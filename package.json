@@ -34,7 +34,7 @@
     "@tsconfig/svelte": "5.0.8",
     "@wxt-dev/module-svelte": "2.0.5",
     "conventional-changelog-conventionalcommits": "9.3.1",
-    "happy-dom": "20.11.1",
+    "happy-dom": "20.11.2",
     "semantic-release": "25.0.9",
     "svelte": "5.56.8",
     "svelte-check": "4.7.4",
