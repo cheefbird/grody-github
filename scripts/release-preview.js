@@ -31,7 +31,9 @@ ${next.notes}`
 ### Release preview
 
 No release would be cut from this branch — most likely because no commit since the
-last tag carries a releasing type (\`feat\`, \`fix\`, \`perf\`, \`refactor\`, or \`chore(deps)\`).
+last tag carries a releasing type. The common ones are \`feat\`, \`fix\`, \`perf\`,
+\`refactor\`, and \`chore(deps)\`; semantic-release's own defaults also apply underneath,
+so a breaking-change footer or a \`git revert\` commit releases too.
 
 semantic-release also reports no release when it short-circuits for other reasons, so
 if that looks wrong, check the \`Compute release preview\` step's log for the reason.`;

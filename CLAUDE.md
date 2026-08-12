@@ -38,6 +38,12 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 - Releases are driven by commit type. Because merges are squashed, the **PR title**
   is the commit semantic-release analyzes: `feat` → minor, `fix`/`perf`/`refactor`
   → patch, `chore(deps)` → patch, everything else → no release
+- Custom `releaseRules` do not *replace* semantic-release's defaults — they are tried
+  first and fall through to them (`commit-analyzer/index.js:63`). The one default that
+  reaches us in practice is `{ revert: true }` → patch, which matches the
+  `This reverts commit <sha>.` body line, **not** a `revert:` type. A local
+  `git revert` produces that line and cuts a patch; GitHub's Revert button writes
+  `Reverts org/repo#N` instead and releases nothing
 - `chore(deps)` is the one rule where the **scope is load-bearing**. Renovate emits
   that scope by default, so its PRs cut patches and land in a "Dependencies" section.
   Bare `chore:` and any other scope (`chore(renovate):`, and semantic-release's own
