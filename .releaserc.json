@@ -19,11 +19,11 @@
         "presetConfig": {
           "types": [
             { "type": "feat", "section": "Features" },
-            { "type": "fix", "section": "Bug Fixes" },
+            { "type": "fix", "section": "Fixes" },
             { "type": "perf", "section": "Performance Improvements" },
             { "type": "refactor", "section": "Code Refactoring" },
             { "type": "revert", "section": "Reverts" },
-            { "type": "chore", "scope": "deps", "section": "Dependencies" },
+            { "type": "chore", "scope": "deps", "section": "Chores" },
             { "type": "docs", "hidden": true },
             { "type": "style", "hidden": true },
             { "type": "chore", "hidden": true },
