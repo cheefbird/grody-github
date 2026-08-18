@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.2](https://github.com/cheefbird/grody-github/compare/v0.6.1...v0.6.2) (2026-08-18)
+
+### Chores
+
+* **deps:** lock file maintenance ([#194](https://github.com/cheefbird/grody-github/issues/194)) ([abf276e](https://github.com/cheefbird/grody-github/commit/abf276e65656150245ea7a9cca891ff864b0598c))
+* **deps:** update dependency @biomejs/biome to v2.5.8 ([#191](https://github.com/cheefbird/grody-github/issues/191)) ([2fac288](https://github.com/cheefbird/grody-github/commit/2fac288e44d69e2f42229f6e62266f62dd500b53))
+* **deps:** update dependency @testing-library/user-event to v14.6.4 ([#192](https://github.com/cheefbird/grody-github/issues/192)) ([d2c8827](https://github.com/cheefbird/grody-github/commit/d2c8827d4bb8a8e91f519bb3ade93a3b4be12047))
+* **deps:** update dependency wxt to v0.21.4 ([#187](https://github.com/cheefbird/grody-github/issues/187)) ([1d4aa61](https://github.com/cheefbird/grody-github/commit/1d4aa61fcf3e5c73344851b6350af0e647d7e0b8))
+* **deps:** update extension framework ([#193](https://github.com/cheefbird/grody-github/issues/193)) ([4f45554](https://github.com/cheefbird/grody-github/commit/4f45554843f28286d70a4720354e4ac25e6e3041))
+* **deps:** update pnpm to v11.21.0 ([#189](https://github.com/cheefbird/grody-github/issues/189)) ([2f03a55](https://github.com/cheefbird/grody-github/commit/2f03a5596190c8777c3f0579465ce159fa35ee36))
+
 ## [0.6.1](https://github.com/cheefbird/grody-github/compare/v0.6.0...v0.6.1) (2026-08-12)
 
 ### Bug Fixes
