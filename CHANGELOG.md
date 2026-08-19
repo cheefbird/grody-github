@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.3](https://github.com/cheefbird/grody-github/compare/v0.6.2...v0.6.3) (2026-08-19)
+
+### Visual Changes
+
+* **meta:** add new app icons ([#197](https://github.com/cheefbird/grody-github/issues/197)) ([0bbb46f](https://github.com/cheefbird/grody-github/commit/0bbb46fad1047451f81a54e29b836d8939bb980d))
+
+### Chores
+
+* **deps:** update pnpm to v11.22.0 ([#195](https://github.com/cheefbird/grody-github/issues/195)) ([38cf426](https://github.com/cheefbird/grody-github/commit/38cf426256bd23bed1e68e471c721f432ae0f039))
+
 ## [0.6.2](https://github.com/cheefbird/grody-github/compare/v0.6.1...v0.6.2) (2026-08-18)
 
 ### Chores
