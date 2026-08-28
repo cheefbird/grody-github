@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.4](https://github.com/cheefbird/grody-github/compare/v0.6.3...v0.6.4) (2026-08-28)
+
+### Chores
+
+* **deps:** lock file maintenance ([#201](https://github.com/cheefbird/grody-github/issues/201)) ([1ed9fce](https://github.com/cheefbird/grody-github/commit/1ed9fce57bcc3509f0891c4c420e40bea6d0df33))
+* **deps:** update dependency @biomejs/biome to v2.5.10 ([#202](https://github.com/cheefbird/grody-github/issues/202)) ([bd81c6a](https://github.com/cheefbird/grody-github/commit/bd81c6a8f4b5e28c1eba5bd4e311afd1bc246a94))
+* **deps:** update dependency @biomejs/biome to v2.5.9 ([#196](https://github.com/cheefbird/grody-github/issues/196)) ([edaf84e](https://github.com/cheefbird/grody-github/commit/edaf84e417228876bbe4e55572a8a2fd1c89c984))
+* **deps:** update dependency @testing-library/user-event to v14.6.5 ([#198](https://github.com/cheefbird/grody-github/issues/198)) ([4d0fe5b](https://github.com/cheefbird/grody-github/commit/4d0fe5bfd91ef0b2cd8cbb813b3bfa2b349d12fa))
+* **deps:** update dependency @testing-library/user-event to v14.6.6 ([#203](https://github.com/cheefbird/grody-github/issues/203)) ([5910f5c](https://github.com/cheefbird/grody-github/commit/5910f5cb972ef16dc30fa6d7e71e737348c048ed))
+* **deps:** update extension framework ([#200](https://github.com/cheefbird/grody-github/issues/200)) ([34a966b](https://github.com/cheefbird/grody-github/commit/34a966b02c0f00d14af9303338239d3f9e9fb596))
+* **deps:** update node.js to 24.20 ([#204](https://github.com/cheefbird/grody-github/issues/204)) ([7401e61](https://github.com/cheefbird/grody-github/commit/7401e61f29f307887eb1224f3bfcc496ec268376))
+* **deps:** update pnpm to v11.24.0 ([#205](https://github.com/cheefbird/grody-github/issues/205)) ([79a1765](https://github.com/cheefbird/grody-github/commit/79a176580b2dd19ca78d3bd36bc2ead578d72ddf))
+* **deps:** update test infrastructure ([#199](https://github.com/cheefbird/grody-github/issues/199)) ([4522f2b](https://github.com/cheefbird/grody-github/commit/4522f2ba4098a0b4cad0e4d4f0e2c3eb7203a6a4))
+
 ## [0.6.3](https://github.com/cheefbird/grody-github/compare/v0.6.2...v0.6.3) (2026-08-19)
 
 ### Visual Changes
