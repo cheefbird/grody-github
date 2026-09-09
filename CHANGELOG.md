@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.5](https://github.com/cheefbird/grody-github/compare/v0.6.4...v0.6.5) (2026-09-09)
+
+### Chores
+
+* **deps:** lock file maintenance ([#208](https://github.com/cheefbird/grody-github/issues/208)) ([86e8d43](https://github.com/cheefbird/grody-github/commit/86e8d432509260f7ad0a12c591ef8c0a610f763b))
+* **deps:** lock file maintenance ([#216](https://github.com/cheefbird/grody-github/issues/216)) ([5d01d2e](https://github.com/cheefbird/grody-github/commit/5d01d2e38e7dc96095067e261c253e57d80c090f))
+* **deps:** update dependency @biomejs/biome to v2.5.11 ([#207](https://github.com/cheefbird/grody-github/issues/207)) ([bd7bd9d](https://github.com/cheefbird/grody-github/commit/bd7bd9df4ba1c3dd4099c5c41b88136c4ca495de))
+* **deps:** update dependency @biomejs/biome to v2.5.12 ([#214](https://github.com/cheefbird/grody-github/issues/214)) ([f98dbf7](https://github.com/cheefbird/grody-github/commit/f98dbf78b7e33b10e66e2cb21d101b23eb056495))
+* **deps:** update dependency @testing-library/user-event to v14.6.7 ([#212](https://github.com/cheefbird/grody-github/issues/212)) ([4807aa5](https://github.com/cheefbird/grody-github/commit/4807aa592130efeb65774209f906a41f66fd0898))
+* **deps:** update dependency happy-dom to v20.11.15 ([#206](https://github.com/cheefbird/grody-github/issues/206)) ([023657f](https://github.com/cheefbird/grody-github/commit/023657fd92653abbf0d79ff12d302b48ddbbf7d0))
+* **deps:** update dependency happy-dom to v20.14.0 ([#210](https://github.com/cheefbird/grody-github/issues/210)) ([8e2c04a](https://github.com/cheefbird/grody-github/commit/8e2c04a9882b5a1e656409506bf4b4117f6f5017))
+* **deps:** update dependency svelte to v5.57.0 ([#211](https://github.com/cheefbird/grody-github/issues/211)) ([24c813b](https://github.com/cheefbird/grody-github/commit/24c813babf7f38d237521a681a3ba14008a59013))
+* **deps:** update node.js to 24.21 ([#215](https://github.com/cheefbird/grody-github/issues/215)) ([1f209ec](https://github.com/cheefbird/grody-github/commit/1f209ec1e76068e47623c13c811aaf3ae22ea371))
+* **deps:** update pnpm to v11.25.0 ([#209](https://github.com/cheefbird/grody-github/issues/209)) ([e9ff2a7](https://github.com/cheefbird/grody-github/commit/e9ff2a79959cc951ee7ba33d3f07fffc485c69ee))
+* **deps:** update pnpm/action-setup action to v6.1.0 ([#213](https://github.com/cheefbird/grody-github/issues/213)) ([2ac2621](https://github.com/cheefbird/grody-github/commit/2ac26219fd2ff41eb0c67d9a70f8c382d3207589))
+
 ## [0.6.4](https://github.com/cheefbird/grody-github/compare/v0.6.3...v0.6.4) (2026-08-28)
 
 ### Chores
