@@ -9,7 +9,7 @@ import { requestEnvironments } from "@/lib/github-api";
 import type { Environment } from "@/lib/types";
 import { isDeploymentsPage } from "../../page-context";
 
-const ENV_NAV_SELECTOR = 'nav[class*="environmentlist"]';
+const ENV_NAV_SELECTOR = 'nav[data-testid="environment-list"]';
 const CONTAINER_CLASS = "grody-env-filter";
 
 // Hides React's env list while our filter is active without touching its DOM
