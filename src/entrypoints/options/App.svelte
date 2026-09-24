@@ -154,7 +154,7 @@ async function handleSave() {
     <button
       type="button"
       class="link-btn"
-      onclick={() => showTokenHelp = !showTokenHelp}
+      onclick={() => (showTokenHelp = !showTokenHelp)}
     >
       {showTokenHelp ? "Hide details" : "Learn more"}
     </button>
@@ -210,13 +210,19 @@ async function handleSave() {
       id="status-enabled"
       type="checkbox"
       checked={statusEnabled}
-      onchange={() => toggleSetting(() => statusEnabled, v => statusEnabled = v, enabledStorage, "status")}
+      onchange={() =>
+  toggleSetting(
+    () => statusEnabled,
+    (v) => (statusEnabled = v),
+    enabledStorage,
+    "status",
+  )}
     >
     {#if savedFlash === "status"}
       <span
         class="saved-flash"
         role="status"
-        onanimationend={() => savedFlash = null}
+        onanimationend={() => (savedFlash = null)}
         >Saved</span
       >
     {/if}
@@ -237,7 +243,7 @@ async function handleSave() {
     <span
       class="saved-flash"
       role="status"
-      onanimationend={() => savedFlash = null}
+      onanimationend={() => (savedFlash = null)}
       >Saved</span
     >
   {/if}
