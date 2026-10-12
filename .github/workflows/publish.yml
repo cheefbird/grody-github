@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   resolve-tag:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 2
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -43,7 +43,7 @@ jobs:
   publish-chrome:
     needs: resolve-tag
     if: inputs.stores == 'chrome' || inputs.stores == 'all'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 5
     environment: chrome-store
     concurrency:
@@ -96,7 +96,7 @@ jobs:
   publish-firefox:
     needs: resolve-tag
     if: inputs.stores == 'firefox' || inputs.stores == 'all'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 5
     environment: firefox-store
     concurrency:
@@ -157,7 +157,7 @@ jobs:
   publish-edge:
     needs: resolve-tag
     if: inputs.stores == 'edge' || inputs.stores == 'all'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 5
     environment: edge-store
     concurrency:
