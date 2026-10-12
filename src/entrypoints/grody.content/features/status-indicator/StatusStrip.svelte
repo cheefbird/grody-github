@@ -24,8 +24,8 @@ let accentColor = $derived(
   class="strip"
   role="status"
   aria-label={resolved
-  ? "GitHub incident resolved — click to expand"
-  : "GitHub incident active — click to expand"}
+    ? "GitHub incident resolved — click to expand"
+    : "GitHub incident active — click to expand"}
 >
   <button
     type="button"

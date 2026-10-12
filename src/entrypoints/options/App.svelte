@@ -211,12 +211,12 @@ async function handleSave() {
       type="checkbox"
       checked={statusEnabled}
       onchange={() =>
-  toggleSetting(
-    () => statusEnabled,
-    (v) => (statusEnabled = v),
-    enabledStorage,
-    "status",
-  )}
+        toggleSetting(
+          () => statusEnabled,
+          (v) => (statusEnabled = v),
+          enabledStorage,
+          "status",
+        )}
     >
     {#if savedFlash === "status"}
       <span

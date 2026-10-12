@@ -60,13 +60,15 @@ onMount(() => {
       {#if incident.status === "resolved"}
         {statusLabel(incident.status)}
         &middot;
-        {timeSince(incident.resolved_at || incident.updated_at || incident.started_at)}
+        {timeSince(
+          incident.resolved_at || incident.updated_at || incident.started_at,
+        )}
       {:else}
         {statusLabel(incident.status)}
         &middot;
         {incident.updated_at
-  ? `Updated ${timeSince(incident.updated_at)}`
-  : timeSince(incident.started_at)}
+          ? `Updated ${timeSince(incident.updated_at)}`
+          : timeSince(incident.started_at)}
       {/if}
     </div>
     {#each incident.components as component}
