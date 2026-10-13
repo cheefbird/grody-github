@@ -11,6 +11,7 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 ## Commands
 
 - `pnpm dev` — dev server with hot reload (Chrome)
+- `pnpm dev:firefox` / `pnpm dev:edge`, `pnpm build:firefox` / `pnpm build:edge` — other browsers
 - `pnpm build` — production build
 - `pnpm lint` — biome check
 - `pnpm lint:fix` / `pnpm format:fix` — biome autofix
@@ -18,12 +19,6 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 - `pnpm test:watch` — vitest in watch mode
 - `pnpm check` — svelte-check type checking
 - `pnpm zip` / `pnpm zip:firefox` / `pnpm zip:edge` — build extension zips
-
-## Git Policy
-
-- Never commit or push — user handles all git ops
-- Subagents must be explicitly told not to commit
-- Conventional commit style when drafting messages
 
 ## CI/CD
 
@@ -79,6 +74,9 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 
 - Features live in `src/entrypoints/grody.content/features/*/index.ts`, auto-discovered via `import.meta.glob`
 - Each feature exports a `FeatureDefinition` from `src/lib/feature-types.ts`
+- `include`/`exclude` are URL predicates from `page-context.ts`. With `reinitOnNavigation`, `init()` re-runs on every `wxt:locationchange`; the prior run's `signal` aborts, so register DOM cleanup on `signal`
+- Content scripts never call the GitHub API directly: they `browser.runtime.sendMessage` (`requestWorkflows`/`requestEnvironments` in `src/lib/github-api.ts`) and `background.ts` fetches + caches. New data = new message type in `src/lib/messages.ts` + a handler in `background.ts`
+- Sidebar filters share `mountSidebarFilter()` (`src/lib/components/sidebar-filter.ts`) — a feature only supplies fetch/label/href callbacks
 - Optional features gate on a storage-backed enabled flag checked in `init()`
 - Storage uses WXT's `storage.defineItem()` — auto-imported globally, no explicit import needed
 - Storage key convention: `local:[feature]:[setting]` (e.g. `local:github-status:enabled`)
@@ -93,5 +91,7 @@ WXT browser extension (Svelte + TypeScript) that cleans up GitHub UI annoyances.
 
 - `storage` from WXT is an auto-import global — don't add `import { storage } from "wxt/storage"` in `src/lib/` files
 - Generated `.wxt/tsconfig.json` enables `noUncheckedIndexedAccess` — array/record indexing yields `T | undefined`, narrow or use optional chaining
-- GitHub's newer pages (e.g. `/deployments`) are React apps — never mutate React-owned DOM. All sidebar filters use the overlay pattern: mount `SidebarFilter` in a sibling container and hide the native list via a CSS rule keyed on the container's `data-filtering` attribute (see `env-filter` and `workflow-filter`)
+- GitHub's newer pages (e.g. `/deployments`, `/actions`) are React apps — never modify or remove React-rendered nodes; only insert our own sibling container. All sidebar filters use the overlay pattern: mount `SidebarFilter` in a sibling container and hide the native list via a CSS rule keyed on the container's `data-filtering` attribute (see `env-filter` and `workflow-filter`)
 - Selector priority for GitHub DOM: `data-testid` → `aria-label` → CSS-module class prefix (`[class*="..."]`, never the full hashed name) as a last resort. Class prefixes aren't stable either — GitHub dropped `environmentlist` from the deployments nav and silently broke `env-filter`
+- Those React pages are server-rendered and hydrate *after* our content script runs. Anything we insert into the SSR markup causes a hydration mismatch: React silently discards that subtree and client-renders a fresh one, taking our container with it (no console error in prod). Wrap every sidebar container in `keepAttached()` (`src/lib/dom.ts`) so it gets re-inserted next to the fresh anchor. There's no DOM-visible "hydrated" signal to wait on instead — `react-app[data-ssr]` doesn't change
+- Filters only mount when GitHub truncates the native list (a "Show more" control is present), so verify live on a repo with >50 workflows / many environments. Feature `index.ts` files have no unit tests — selector changes are verified in the browser

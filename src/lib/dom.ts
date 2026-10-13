@@ -38,3 +38,29 @@ export function waitForElement<T extends Element = Element>(
     });
   });
 }
+
+/**
+ * re-runs `reinsert` whenever `container` gets detached — e.g. when React
+ * discards server-rendered markup we mounted into and renders it fresh.
+ * moving the same node back preserves whatever is mounted inside it.
+ */
+export function keepAttached(
+  container: Element,
+  reinsert: () => void,
+  signal: AbortSignal,
+): void {
+  if (signal.aborted) return;
+
+  const observer = new MutationObserver(() => {
+    if (!container.isConnected) reinsert();
+  });
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+
+  signal.addEventListener("abort", () => observer.disconnect(), {
+    once: true,
+  });
+}
