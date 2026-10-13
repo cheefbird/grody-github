@@ -3,7 +3,7 @@ import {
   type MountedSidebarFilter,
   mountSidebarFilter,
 } from "@/lib/components/sidebar-filter";
-import { waitForElement } from "@/lib/dom";
+import { keepAttached, waitForElement } from "@/lib/dom";
 import type { FeatureDefinition } from "@/lib/feature-types";
 import { requestEnvironments } from "@/lib/github-api";
 import type { Environment } from "@/lib/types";
@@ -48,6 +48,11 @@ const definition: FeatureDefinition = {
     const container = document.createElement("div");
     container.className = CONTAINER_CLASS;
     nav.before(container);
+    keepAttached(
+      container,
+      () => document.querySelector(ENV_NAV_SELECTOR)?.before(container),
+      signal,
+    );
 
     // Registered before mount so a mount() throw still triggers cleanup
     let app: MountedSidebarFilter | null = null;

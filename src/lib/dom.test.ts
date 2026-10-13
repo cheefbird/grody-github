@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from "vitest";
 
-import { waitForElement } from "./dom";
+import { keepAttached, waitForElement } from "./dom";
 
 function setBody(html: string) {
   document.body.replaceChildren();
@@ -119,5 +119,72 @@ describe("waitForElement", () => {
     const el = await promise;
     expect(el).toBeInstanceOf(HTMLElement);
     expect(el?.className).toBe("deep-target");
+  });
+});
+
+describe("keepAttached", () => {
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  // Mimics React discarding the server-rendered sidebar and rendering a fresh one
+  function rerenderSidebar() {
+    document.querySelector("#sidebar")?.remove();
+    const sidebar = document.createElement("div");
+    sidebar.id = "sidebar";
+    sidebar.innerHTML = '<nav id="list"></nav>';
+    document.body.appendChild(sidebar);
+  }
+
+  function setup() {
+    setBody('<div id="sidebar"><nav id="list"></nav></div>');
+    const container = document.createElement("div");
+    container.id = "ours";
+    document.querySelector("#list")?.before(container);
+    const reinsert = () => document.querySelector("#list")?.before(container);
+    return { container, reinsert };
+  }
+
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("re-inserts the same container before the fresh anchor after a re-render", async () => {
+    const { container, reinsert } = setup();
+    const controller = new AbortController();
+    keepAttached(container, reinsert, controller.signal);
+
+    rerenderSidebar();
+    await flush();
+
+    expect(container.isConnected).toBe(true);
+    expect(container.nextElementSibling).toBe(document.querySelector("#list"));
+    controller.abort();
+  });
+
+  it("retries on a later mutation when the anchor is not back yet", async () => {
+    const { container, reinsert } = setup();
+    const controller = new AbortController();
+    keepAttached(container, reinsert, controller.signal);
+
+    document.querySelector("#sidebar")?.remove();
+    await flush();
+    expect(container.isConnected).toBe(false);
+
+    rerenderSidebar();
+    await flush();
+
+    expect(container.nextElementSibling).toBe(document.querySelector("#list"));
+    controller.abort();
+  });
+
+  it("stops re-inserting once the signal aborts", async () => {
+    const { container, reinsert } = setup();
+    const controller = new AbortController();
+    keepAttached(container, reinsert, controller.signal);
+
+    controller.abort();
+    rerenderSidebar();
+    await flush();
+
+    expect(container.isConnected).toBe(false);
   });
 });
