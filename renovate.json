@@ -4,26 +4,22 @@
     "config:best-practices",
     "helpers:pinGitHubActionDigestsToSemver",
     "mergeConfidence:all-badges",
-    "workarounds:all",
     "customManagers:biomeVersions",
+    ":approveMajorUpdates",
+    ":prHourlyLimitNone",
     ":semanticCommitTypeAll(chore)"
   ],
+  "timezone": "America/Los_Angeles",
   "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
-  "prHourlyLimit": 0,
-  "major": {
-    "dependencyDashboardApproval": true
-  },
   "osvVulnerabilityAlerts": true,
   "dependencyDashboardOSVVulnerabilitySummary": "all",
   "vulnerabilityAlerts": {
-    "addLabels": ["security"],
-    "minimumReleaseAge": null,
-    "prConcurrentLimit": 10
+    "addLabels": ["security"]
   },
   "packageRules": [
     {
-      "description": "Group extension framework (WXT + Svelte share peer deps; vite and web-ext are wxt peer deps)",
+      "description": "Group extension framework: WXT + Svelte, plus the vite toolchain they both peer on. Listed explicitly because packages:vite's `**vite-plugin**` glob doesn't cross the `/` in scoped names",
       "matchPackageNames": [
         "wxt",
         "@wxt-dev/**",
@@ -31,38 +27,34 @@
         "svelte-check",
         "@tsconfig/svelte",
         "vite",
+        "@sveltejs/vite-plugin-svelte",
         "web-ext"
       ],
       "groupName": "extension framework"
     },
     {
-      "description": "wxt is 0.x so minor bumps are breaking - gate the group's minors behind dashboard approval like majors",
-      "matchPackageNames": [
-        "wxt",
-        "@wxt-dev/**",
-        "svelte",
-        "svelte-check",
-        "@tsconfig/svelte",
-        "vite",
-        "web-ext"
-      ],
+      "description": "wxt is 0.x so its minors are breaking. Approval is branch-wide, so this holds the whole extension framework PR whenever it carries a wxt minor",
+      "matchPackageNames": ["wxt"],
       "matchUpdateTypes": ["minor"],
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Group TypeScript ecosystem",
-      "matchPackageNames": ["typescript", "tslib"],
-      "groupName": "typescript"
-    },
-    {
-      "description": "Group test infrastructure",
-      "matchPackageNames": ["vitest", "happy-dom"],
+      "description": "Group test tooling: packages:jsUnitTest covers vitest, @vitest/** and @testing-library/**; happy-dom is the vitest environment",
+      "extends": ["packages:jsUnitTest"],
+      "matchPackageNames": ["happy-dom"],
       "groupName": "test infrastructure"
     },
     {
-      "description": "Preset 10.x returns writer opts as `template` (conventional-changelog-writer v9). release-notes-generator still depends on writer v8, which reads `mainTemplate`, so 10.x silently renders release notes with no commit sections. Lift this once release-notes-generator moves to writer v9.",
+      "description": "Ship the changelog preset with the built-in semantic-release monorepo group. Capped <10: 10.x returns writer opts as `template` (conventional-changelog-writer v9), but release-notes-generator still depends on writer v8, which reads `mainTemplate`, so 10.x silently renders release notes with no commit sections. Lift the cap once release-notes-generator moves to writer v9.",
       "matchPackageNames": ["conventional-changelog-conventionalcommits"],
-      "allowedVersions": "<10"
+      "allowedVersions": "<10",
+      "groupName": "semantic-release monorepo"
+    },
+    {
+      "description": "Group GitHub Actions. depType `action` leaves out runner images (`runs-on`) and setup-node's `node-version`, which the same manager extracts",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["action"],
+      "groupName": "github actions"
     },
     {
       "description": "Node version updates keep existing precision (.nvmrc stays major.minor), no pinning to full patch",
