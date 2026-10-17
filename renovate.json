@@ -51,6 +51,12 @@
       "groupName": "semantic-release monorepo"
     },
     {
+      "description": "Group GitHub Actions. depType `action` leaves out runner images (`runs-on`) and setup-node's `node-version`, which the same manager extracts",
+      "matchManagers": ["github-actions"],
+      "matchDepTypes": ["action"],
+      "groupName": "github actions"
+    },
+    {
       "description": "Node version updates keep existing precision (.nvmrc stays major.minor), no pinning to full patch",
       "matchDepNames": ["node"],
       "rangeStrategy": "replace"
