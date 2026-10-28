@@ -2,7 +2,7 @@
   "name": "grody-github",
   "description": "Filter your Github workflows, and more!",
   "private": true,
-  "version": "0.6.7",
+  "version": "0.6.8",
   "type": "module",
   "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61",
   "scripts": {
