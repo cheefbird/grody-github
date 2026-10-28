@@ -12,8 +12,12 @@ import { isDeploymentsPage } from "../../page-context";
 const ENV_NAV_SELECTOR = 'nav[data-testid="environment-list"]';
 const CONTAINER_CLASS = "grody-env-filter";
 
-// Hides React's env list while our filter is active without touching its DOM
-const HIDE_RULE = `.${CONTAINER_CLASS}[data-filtering] ~ ${ENV_NAV_SELECTOR} { display: none; }`;
+// Hides React's env list while our filter is active, and GitHub's own search
+// once our input has rendered, without touching React's DOM.
+const HIDE_RULE = `
+.${CONTAINER_CLASS}[data-filtering] ~ ${ENV_NAV_SELECTOR} { display: none; }
+.${CONTAINER_CLASS}:has(input) ~ ${ENV_NAV_SELECTOR} li:has(input[aria-label="Filter environments"]):not(:has(li)) { display: none; }
+`;
 
 function hasShowMoreControl(nav: HTMLElement): boolean {
   return [...nav.querySelectorAll("a, button")].some((el) =>
