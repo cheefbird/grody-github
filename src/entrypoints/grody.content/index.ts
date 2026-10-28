@@ -21,5 +21,13 @@ export default defineContentScript({
         console.error("[grody] navigation handler failed:", err);
       });
     });
+
+    // Features were torn down before entering bfcache; restore needs a re-init
+    ctx.addEventListener(window, "pageshow", (event) => {
+      if (!event.persisted) return;
+      manager.onNavigate(new URL(location.href)).catch((err) => {
+        console.error("[grody] bfcache restore handler failed:", err);
+      });
+    });
   },
 });
