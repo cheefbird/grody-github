@@ -9,13 +9,13 @@ import { requestWorkflows } from "@/lib/github-api";
 import type { Workflow } from "@/lib/types";
 import { isActionsPage } from "../../page-context";
 
-const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Actions workflows"]';
-const GROUP_SELECTOR = ':scope > ul > li[data-component="ActionList.Group"]';
-const GROUP_HEADING_SELECTOR = '[data-component="ActionList.GroupHeading"]';
+const SIDEBAR_NAV_SELECTOR = 'nav[aria-label="Workflows"]';
+const GROUP_SELECTOR = '[data-component="Sidebar.SectionGroup"]';
+const GROUP_HEADING_SELECTOR = 'h2[data-component="Heading"]';
 const CONTAINER_CLASS = "grody-workflow-filter";
 
 // Hides only the workflows section while our filter is active
-const HIDE_RULE = `li.${CONTAINER_CLASS}[data-filtering] ~ li[data-component="ActionList.Group"] { display: none; }`;
+const HIDE_RULE = `.${CONTAINER_CLASS}[data-filtering] ~ ${GROUP_SELECTOR} { display: none; }`;
 
 function workflowFilename(workflow: Workflow): string {
   return workflow.path.split("/").pop() ?? "";
@@ -63,7 +63,7 @@ const definition: FeatureDefinition = {
     style.textContent = HIDE_RULE;
     document.head.append(style);
 
-    const container = document.createElement("li");
+    const container = document.createElement("div");
     container.className = CONTAINER_CLASS;
     workflowsSection.before(container);
     keepAttached(
