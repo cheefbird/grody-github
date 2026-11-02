@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.9](https://github.com/cheefbird/grody-github/compare/v0.6.8...v0.6.9) (2026-11-02)
+
+### Fixes
+
+* **workflow-filter:** match GitHub's new Actions sidebar markup ([#267](https://github.com/cheefbird/grody-github/issues/267)) ([e57fb08](https://github.com/cheefbird/grody-github/commit/e57fb081276a099a850e24adad11cd01eecdff22))
+
+### Chores
+
+* **deps:** lock file maintenance ([#266](https://github.com/cheefbird/grody-github/issues/266)) ([f4f138e](https://github.com/cheefbird/grody-github/commit/f4f138ec063a59ec63b557a4cf836f28b1c24f58))
+* **deps:** update dependency @biomejs/biome to v2.6.4 ([#265](https://github.com/cheefbird/grody-github/issues/265)) ([ae33cd9](https://github.com/cheefbird/grody-github/commit/ae33cd9e97fb756a939307d0aa3a1d0918a72ebd))
+* **deps:** update extension framework ([#263](https://github.com/cheefbird/grody-github/issues/263)) ([cd66867](https://github.com/cheefbird/grody-github/commit/cd668671029f1aaf868ca1b48ba7330d229e9f61))
+* **deps:** update pnpm to v12.16.1 ([#264](https://github.com/cheefbird/grody-github/issues/264)) ([426b4b9](https://github.com/cheefbird/grody-github/commit/426b4b9a8a81b8fce456a71dd28732b99ab216a1))
+
 ## [0.6.8](https://github.com/cheefbird/grody-github/compare/v0.6.7...v0.6.8) (2026-10-28)
 
 ### Fixes
