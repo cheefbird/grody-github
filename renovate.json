@@ -13,7 +13,9 @@
   "schedule": ["after 4pm", "before 8am"],
   "prConcurrentLimit": 5,
   "osvVulnerabilityAlerts": true,
-  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "dependencyDashboard": {
+    "osvVulnerabilitySummary": "all"
+  },
   "vulnerabilityAlerts": {
     "addLabels": ["security"]
   },
