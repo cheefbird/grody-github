@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Generate App token
         id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
         with:
           client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
@@ -35,7 +35,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Biome
-        uses: biomejs/setup-biome@4c91541eaada48f67d7dbd7833600ce162b68f51 # v2.7.1
+        uses: biomejs/setup-biome@77af1e9ce0cc32955e83b0c3e30c28ae3b81cab7 # v2.8.0
 
       - name: Run Biome CI check
         run: biome ci .
